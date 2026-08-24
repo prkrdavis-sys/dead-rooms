@@ -133,11 +133,6 @@ select {
   background: rgba(180, 35, 24, 0.55);
 }
 
-input[type="range"] {
-  width: 100%;
-  accent-color: #e11d48;
-}
-
 input[type="text"] {
   width: 100%;
   background: #1a1010;
