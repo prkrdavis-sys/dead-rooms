@@ -14,8 +14,11 @@ import {
 const IDLE_FRAMES = 4
 const WALK_FRAMES = 8
 const FIRE_FRAMES = 4
+const DEATH_FRAMES = 8
 const SOLDIER_TOTAL = IDLE_FRAMES + WALK_FRAMES + FIRE_FRAMES
 const ENEMY_TOTAL = IDLE_FRAMES + WALK_FRAMES
+
+export const SOLDIER_DEATH_ANIM = 'soldier-death'
 
 function sourceImage(scene: Phaser.Scene, key: string): CanvasImageSource | null {
   if (!scene.textures.exists(key)) return null
@@ -196,6 +199,52 @@ function buildSoldierPose(scene: Phaser.Scene, pose: CharacterPose): void {
   )
 }
 
+function paintDeath(
+  ctx: CanvasRenderingContext2D,
+  img: CanvasImageSource,
+  index: number,
+  ox: number,
+): void {
+  const t = index / Math.max(1, DEATH_FRAMES - 1)
+  const collapse = t * t
+  const stumble = Math.sin(t * Math.PI) * (1 - t)
+  ctx.save()
+  ctx.translate(ox, 0)
+  ctx.beginPath()
+  ctx.rect(0, 0, CHAR_FRAME_W, CHAR_FRAME_H)
+  ctx.clip()
+  drawFeet(ctx, t * 2, 2 + collapse * 4, 0.35 + t * 0.4)
+  ctx.save()
+  ctx.translate(CHAR_BODY.x + stumble * 4, CHAR_BODY.y + collapse * 6)
+  ctx.rotate(-collapse * 1.45)
+  ctx.scale(1 + collapse * 0.08, 1 - collapse * 0.62)
+  ctx.translate(-CHAR_BODY.x, -CHAR_BODY.y)
+  ctx.drawImage(img, CHAR_STAMP.x - collapse * 2, CHAR_STAMP.y + collapse * 4)
+  ctx.restore()
+  ctx.globalCompositeOperation = 'source-atop'
+  ctx.fillStyle = `rgba(90, 8, 8, ${collapse * 0.62})`
+  ctx.fillRect(0, 0, CHAR_FRAME_W, CHAR_FRAME_H)
+  ctx.globalCompositeOperation = 'source-over'
+  ctx.restore()
+}
+
+function buildSoldierDeath(scene: Phaser.Scene): void {
+  const img =
+    sourceImage(scene, rawTextureKey('soldier', 'stand')) ??
+    sourceImage(scene, rawTextureKey('soldier', 'hold'))
+  if (!img) return
+  const canvas = document.createElement('canvas')
+  canvas.width = CHAR_FRAME_W * DEATH_FRAMES
+  canvas.height = CHAR_FRAME_H
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  for (let i = 0; i < DEATH_FRAMES; i += 1) {
+    paintDeath(ctx, img, i, i * CHAR_FRAME_W)
+  }
+  addSheet(scene, SOLDIER_DEATH_ANIM, canvas, DEATH_FRAMES)
+  makeAnim(scene, SOLDIER_DEATH_ANIM, SOLDIER_DEATH_ANIM, 0, DEATH_FRAMES - 1, 10, 0)
+}
+
 function buildEnemyPack(scene: Phaser.Scene, packId: CharacterPackId): void {
   const hold = sourceImage(scene, rawTextureKey(packId, 'hold'))
   const stand = sourceImage(scene, rawTextureKey(packId, 'stand'))
@@ -223,6 +272,7 @@ function buildEnemyPack(scene: Phaser.Scene, packId: CharacterPackId): void {
 export function createCharacterAnims(scene: Phaser.Scene): void {
   const poses: CharacterPose[] = ['stand', 'hold', 'gun', 'machine', 'silencer', 'reload']
   for (const pose of poses) buildSoldierPose(scene, pose)
+  buildSoldierDeath(scene)
   for (const pack of CHARACTER_PACKS) {
     if (pack.id === 'soldier') continue
     buildEnemyPack(scene, pack.id)

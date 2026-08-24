@@ -11,7 +11,7 @@ import {
   type WeaponSlot,
 } from '../../data/weapons'
 import { bus, type HudState } from '../../lib/bus'
-import { applyCharBody } from '../createAnims'
+import { applyCharBody, SOLDIER_DEATH_ANIM } from '../createAnims'
 import { soldierSheetKey } from '../characterAssets'
 import { PLAYER_MAX_HP, type RunConfig } from '../types'
 import { poseForWeapon, shotFxFor, worldFromLocal } from '../weaponView'
@@ -157,6 +157,11 @@ export class PlayScene extends Phaser.Scene {
     this.banner = 'WAVE 1'
     this.emitHud()
 
+    if (import.meta.env.DEV) {
+      const w = window as Window & { __killPlayer?: () => void }
+      w.__killPlayer = () => this.die()
+    }
+
     this.offs.push(
       bus.on('move', (v) => {
         this.touchMove = v
@@ -168,6 +173,7 @@ export class PlayScene extends Phaser.Scene {
         this.specialHeld = down
       }),
       bus.on('weapon', (slot) => {
+        if (this.dead || this.paused) return
         if (slot >= 1 && slot <= 10) this.equip(slot as WeaponSlot)
       }),
       bus.on('pauseToggle', () => this.togglePause()),
@@ -183,6 +189,10 @@ export class PlayScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       for (const off of this.offs) off()
       this.offs = []
+      if (import.meta.env.DEV) {
+        const w = window as Window & { __killPlayer?: () => void }
+        if (w.__killPlayer) w.__killPlayer = undefined
+      }
     })
   }
 
@@ -227,6 +237,7 @@ export class PlayScene extends Phaser.Scene {
     this.keySpace = kb.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     this.keyShift = kb.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT)
     kb.on('keydown', (ev: KeyboardEvent) => {
+      if (this.dead) return
       const slot = slotFromKeyboard(ev.code)
       if (slot) this.equip(slot)
       if (ev.code === 'KeyP' || ev.code === 'Escape') this.togglePause()
@@ -318,6 +329,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private equip(slot: WeaponSlot): void {
+    if (this.dead || this.paused) return
     this.slot = slot
     const def = WEAPON_BY_SLOT[slot]
     const sheet = soldierSheetKey(poseForWeapon(def.id))
@@ -718,18 +730,75 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private die(): void {
+    if (this.dead) return
     this.dead = true
-    this.player.setTint(0x7f1d1d)
     this.player.setVelocity(0, 0)
-    this.banner = 'YOU DIED'
+    this.player.setAlpha(1)
+    this.player.clearTint()
+    this.freezeCombat()
+    this.splatter(this.player.x, this.player.y)
+    this.cameras.main.shake(320, 0.014)
+    this.cameras.main.flash(220, 110, 12, 12, false)
+    this.cameras.main.zoomTo(Math.min(this.cameras.main.zoom * 1.22, 1.4), 900)
+    this.playSfx('death-hit', 0.55)
+    this.time.delayedCall(420, () => {
+      if (this.player.active) this.playSfx('death-drop', 0.5)
+    })
+
+    this.player.anims.stop()
+    if (this.anims.exists(SOLDIER_DEATH_ANIM)) {
+      this.player.setTexture(SOLDIER_DEATH_ANIM, 0)
+      applyCharBody(this.player, 12)
+      this.player.play(SOLDIER_DEATH_ANIM)
+    } else {
+      this.player.setTint(0x7f1d1d)
+    }
+    this.tweens.add({
+      targets: this.player,
+      scaleY: 0.72,
+      duration: 720,
+      ease: 'Cubic.easeIn',
+    })
+    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      if (this.player.active) this.player.setTint(0x7f1d1d)
+    })
+
+    this.banner = null
     this.emitHud()
-    if (this.reported) return
-    this.reported = true
-    bus.emit('gameover', {
-      kills: this.kills,
-      timeSec: Math.floor(this.timeSec),
-      wave: this.wave,
-      score: this.score,
+    bus.emit('dying', true)
+
+    if (import.meta.env.DEV) {
+      const w = window as Window & { __killPlayer?: () => void }
+      w.__killPlayer = undefined
+    }
+
+    this.time.delayedCall(1250, () => {
+      if (this.reported) return
+      this.reported = true
+      bus.emit('gameover', {
+        kills: this.kills,
+        timeSec: Math.floor(this.timeSec),
+        wave: this.wave,
+        score: this.score,
+      })
+    })
+  }
+
+  private freezeCombat(): void {
+    const halt = (sprite: Sprite) => {
+      if (sprite.active) sprite.setVelocity(0, 0)
+    }
+    this.enemies.children.iterate((child) => {
+      halt(child as Sprite)
+      return true
+    })
+    this.bullets.children.iterate((child) => {
+      halt(child as Sprite)
+      return true
+    })
+    this.enemyShots.children.iterate((child) => {
+      halt(child as Sprite)
+      return true
     })
   }
 

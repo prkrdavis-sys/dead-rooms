@@ -15,4 +15,4 @@ Pack files live under `public/assets/kenney/`.
 
 ## Everything else
 
-Box-headed room layouts, enemy lore, UI, gore particles, generated props, and the synthesized menu/combat drones are original to Dead Rooms. This is not an official Boxhead product and does not use Sean Cooper’s assets or names.
+Box-headed room layouts, enemy lore, UI, gore particles, generated props, synthesized menu drones, and the synthesized combat pulse are original to Dead Rooms. This is not an official Boxhead product and does not use Sean Cooper’s assets or names.

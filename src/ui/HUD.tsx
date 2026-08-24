@@ -39,16 +39,18 @@ export function HUD({ hud, onPause, touch }: HUDProps) {
             Wave {hud.wave} · {formatTime(hud.timeSec)}
           </div>
         </div>
-        <button className="pointer-events-auto btn px-3 py-2 text-xs" onClick={onPause}>
-          Pause
-        </button>
+        {!hud.dead && (
+          <button className="pointer-events-auto btn px-3 py-2 text-xs" onClick={onPause}>
+            Pause
+          </button>
+        )}
       </div>
-      {hud.waveBanner && (
+      {hud.waveBanner && !hud.dead && (
         <div className="pointer-events-none absolute inset-x-0 top-1/3 z-10 text-center text-3xl font-bold tracking-[0.2em] text-[#f3e6d0] drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
           {hud.waveBanner}
         </div>
       )}
-      {touch && (
+      {touch && !hud.dead && (
         <div className="pointer-events-auto absolute inset-x-0 top-[5.6rem] z-10 flex gap-1 overflow-x-auto overscroll-contain px-2 pb-1 [touch-action:pan-x]">
           {WEAPONS.map((weapon) => (
             <button

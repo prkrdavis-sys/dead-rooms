@@ -27,6 +27,8 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('boom2', '/assets/kenney/audio/spaceTrash2.mp3')
     this.load.audio('pickup', '/assets/kenney/audio/powerUp1.mp3')
     this.load.audio('empty', '/assets/kenney/audio/lowDown.mp3')
+    this.load.audio('death-hit', '/assets/kenney/audio/error_001.ogg')
+    this.load.audio('death-drop', '/assets/kenney/audio/drop_001.ogg')
   }
 
   create(): void {
