@@ -52,7 +52,7 @@ export function PlayView({ run, onExit, onAgain, onOpenSettings }: PlayViewProps
   const showTouch = useMemo(() => touch, [touch])
 
   return (
-    <div className="relative h-svh w-full overflow-hidden bg-black">
+    <div className="relative h-full w-full overflow-hidden overscroll-none bg-black">
       <GameCanvas run={run} />
       <HUD hud={hud} touch={showTouch} onPause={() => bus.emit('pauseToggle', true)} />
       <TouchControls visible={showTouch && !over} />
