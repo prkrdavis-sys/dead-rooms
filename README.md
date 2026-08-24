@@ -54,13 +54,12 @@ Art and interface/gun audio by [Kenney](https://kenney.nl) (CC0). Combat music i
 
 ## Deploy (GitHub + Vercel)
 
-Vercel treats this as a Vite app (`vercel.json`). After the GitHub repo exists:
+- GitHub: [prkrdavis-sys/dead-rooms](https://github.com/prkrdavis-sys/dead-rooms)
+- Production: [dead-rooms.vercel.app](https://dead-rooms.vercel.app)
+- Dashboard: [Vercel project](https://vercel.com/hughs-projects-ca410e96/dead-rooms)
+
+GitHub is connected, so later pushes to `main` deploy automatically. Manual deploy:
 
 ```bash
-# From a machine logged into GitHub and Vercel
-npx vercel login
-npx vercel link --yes
 npx vercel --prod --yes
 ```
-
-Or import `parker-davis/dead-rooms` at [vercel.com/new](https://vercel.com/new) with Framework Preset **Vite**, output **dist**.
