@@ -77,6 +77,23 @@ select {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
 }
 
+button.panel {
+  appearance: none;
+  width: 100%;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Unlayered .panel box-shadow wins over Tailwind ring utilities, so selection
+   has to live here or the highlight never shows. */
+.panel.is-selected {
+  border-color: #e11d48;
+  background: rgba(48, 14, 16, 0.96);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.45),
+    0 0 0 2px #e11d48;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
