@@ -15,13 +15,13 @@ Pack files live under `public/assets/kenney/`.
 
 ## Fonts — SIL Open Font License 1.1
 
-- Creepster by Font Diner
-- Special Elite by Astigmatic
+- Big Shoulders Stencil by Patric King
+- Barlow Condensed by Jeremy Tribby
 
 Self-hosted under `public/fonts/`. Credit is required by the OFL when redistributing the font files.
 
-https://fonts.google.com/specimen/Creepster
-https://fonts.google.com/specimen/Special+Elite
+https://fonts.google.com/specimen/Big+Shoulders+Stencil
+https://fonts.google.com/specimen/Barlow+Condensed
 https://openfontlicense.org/
 
 ## Everything else

@@ -97,7 +97,6 @@ export default function App() {
     <div className="h-full">
       {screen === 'menu' && (
         <MainMenu
-          profiles={profiles}
           onPlay={() => {
             void music.unlock()
             setScreen('setup')
