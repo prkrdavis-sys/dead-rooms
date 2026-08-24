@@ -1,0 +1,204 @@
+import Phaser from 'phaser'
+
+function paint(
+  scene: Phaser.Scene,
+  key: string,
+  width: number,
+  height: number,
+  draw: (ctx: CanvasRenderingContext2D, width: number, height: number) => void,
+): void {
+  const texture = scene.textures.createCanvas(key, width, height)
+  if (!texture) return
+  const ctx = texture.getContext()
+  draw(ctx, width, height)
+  texture.refresh()
+}
+
+export function createGeneratedTextures(scene: Phaser.Scene): void {
+  paint(scene, 'floor', 48, 48, (ctx, w, h) => {
+    ctx.fillStyle = '#3a342c'
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = '#322c25'
+    for (let i = 0; i < 18; i += 1) {
+      ctx.fillRect((i * 17) % w, (i * 11) % h, 3, 2)
+    }
+    ctx.strokeStyle = '#2a251f'
+    ctx.strokeRect(0.5, 0.5, w - 1, h - 1)
+  })
+
+  paint(scene, 'wall', 48, 48, (ctx, w, h) => {
+    ctx.fillStyle = '#1a1612'
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = '#c45c1c'
+    ctx.fillRect(0, 0, w, 7)
+    ctx.fillStyle = '#2a2420'
+    ctx.fillRect(4, 12, w - 8, h - 16)
+  })
+
+  paint(scene, 'bullet', 8, 8, (ctx, w, h) => {
+    ctx.fillStyle = '#f5e6a3'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 3, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'pellet', 6, 6, (ctx, w, h) => {
+    ctx.fillStyle = '#e7d27a'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 2.2, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'rocket', 16, 8, (ctx, w, h) => {
+    ctx.fillStyle = '#d97706'
+    ctx.fillRect(0, 1, w - 3, h - 2)
+    ctx.fillStyle = '#fde68a'
+    ctx.fillRect(w - 5, 2, 5, h - 4)
+  })
+
+  paint(scene, 'grenade', 10, 10, (ctx, w, h) => {
+    ctx.fillStyle = '#3f6212'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2 + 0.5, 4, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#a3a3a3'
+    ctx.fillRect(3, 1, 4, 3)
+  })
+
+  paint(scene, 'barrel-obj', 28, 28, (ctx) => {
+    ctx.fillStyle = '#7f1d1d'
+    ctx.fillRect(6, 4, 16, 20)
+    ctx.fillStyle = '#facc15'
+    ctx.fillRect(6, 12, 16, 4)
+    ctx.fillStyle = '#450a0a'
+    ctx.fillRect(8, 6, 12, 3)
+  })
+
+  paint(scene, 'crate', 28, 28, (ctx) => {
+    ctx.fillStyle = '#92400e'
+    ctx.fillRect(4, 4, 20, 20)
+    ctx.strokeStyle = '#1c1917'
+    ctx.strokeRect(4.5, 4.5, 19, 19)
+    ctx.beginPath()
+    ctx.moveTo(8, 8)
+    ctx.lineTo(20, 20)
+    ctx.moveTo(20, 8)
+    ctx.lineTo(8, 20)
+    ctx.stroke()
+  })
+
+  paint(scene, 'mine-obj', 18, 18, (ctx, w, h) => {
+    ctx.fillStyle = '#111827'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 7, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#ef4444'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 3, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'charge-obj', 18, 18, (ctx) => {
+    ctx.fillStyle = '#1f2937'
+    ctx.fillRect(3, 5, 12, 10)
+    ctx.fillStyle = '#22d3ee'
+    ctx.fillRect(5, 7, 8, 3)
+  })
+
+  paint(scene, 'barricade', 36, 16, (ctx, w, h) => {
+    ctx.fillStyle = '#57534e'
+    ctx.fillRect(0, 2, w, h - 4)
+    ctx.fillStyle = '#d6d3d1'
+    ctx.fillRect(0, 2, w, 3)
+    ctx.fillStyle = '#44403c'
+    ctx.fillRect(6, 6, 6, 6)
+    ctx.fillRect(24, 6, 6, 6)
+  })
+
+  paint(scene, 'blood-1', 22, 16, (ctx) => {
+    ctx.fillStyle = 'rgba(127,29,29,0.85)'
+    ctx.beginPath()
+    ctx.ellipse(11, 8, 10, 6, 0.3, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'blood-2', 18, 18, (ctx) => {
+    ctx.fillStyle = 'rgba(153,27,27,0.8)'
+    ctx.beginPath()
+    ctx.ellipse(9, 9, 8, 7, -0.4, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'blood-3', 14, 10, (ctx) => {
+    ctx.fillStyle = 'rgba(69,10,10,0.75)'
+    ctx.beginPath()
+    ctx.ellipse(7, 5, 6, 4, 0.2, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'gib-flesh', 8, 6, (ctx) => {
+    ctx.fillStyle = '#9f1239'
+    ctx.fillRect(1, 1, 6, 4)
+  })
+
+  paint(scene, 'gib-bone', 7, 4, (ctx) => {
+    ctx.fillStyle = '#e7e5e4'
+    ctx.fillRect(0, 1, 7, 2)
+  })
+
+  paint(scene, 'fireball', 12, 12, (ctx, w, h) => {
+    ctx.fillStyle = '#fb923c'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#fef08a'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 2.5, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'blast', 48, 48, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(w / 2, h / 2, 4, w / 2, h / 2, 22)
+    g.addColorStop(0, 'rgba(254,243,199,0.9)')
+    g.addColorStop(0.4, 'rgba(249,115,22,0.55)')
+    g.addColorStop(1, 'rgba(127,29,29,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, w, h)
+  })
+
+  paint(scene, 'shadow', 28, 12, (ctx, w, h) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'
+    ctx.beginPath()
+    ctx.ellipse(w / 2, h / 2, 12, 5, 0, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'ammo-box', 18, 14, (ctx) => {
+    ctx.fillStyle = '#a3e635'
+    ctx.fillRect(2, 2, 14, 10)
+    ctx.fillStyle = '#14532d'
+    ctx.fillRect(6, 5, 6, 4)
+  })
+
+  paint(scene, 'health-pack', 16, 16, (ctx) => {
+    ctx.fillStyle = '#fecaca'
+    ctx.fillRect(2, 2, 12, 12)
+    ctx.fillStyle = '#b91c1c'
+    ctx.fillRect(7, 4, 2, 8)
+    ctx.fillRect(4, 7, 8, 2)
+  })
+
+  paint(scene, 'mark', 80, 80, (ctx, w, h) => {
+    ctx.strokeStyle = 'rgba(248,113,113,0.85)'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 30, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(w / 2 - 8, h / 2)
+    ctx.lineTo(w / 2 + 8, h / 2)
+    ctx.moveTo(w / 2, h / 2 - 8)
+    ctx.lineTo(w / 2, h / 2 + 8)
+    ctx.stroke()
+  })
+}
