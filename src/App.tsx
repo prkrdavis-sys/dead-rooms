@@ -45,6 +45,14 @@ export default function App() {
   }, [screen, settings])
 
   useEffect(() => {
+    const arm = () => {
+      void music.unlock()
+    }
+    window.addEventListener('pointerdown', arm, { once: true })
+    return () => window.removeEventListener('pointerdown', arm)
+  }, [])
+
+  useEffect(() => {
     bus.emit('gore', settings.gore)
     bus.emit('volumes', { music: effectiveMusic(settings), sfx: effectiveSfx(settings) })
   }, [settings])

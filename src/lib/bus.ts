@@ -1,6 +1,7 @@
 export type GameEventMap = {
   hud: HudState
   toast: string
+  dying: boolean
   gameover: GameOverPayload
   paused: boolean
   move: { x: number; y: number }

@@ -50,7 +50,7 @@ Charge Packs (`9`): tap fire to plant, **hold fire** to detonate. Explosions hur
 
 ## Credits
 
-Art and interface/gun audio by [Kenney](https://kenney.nl) (CC0). Combat music is synthesized in the browser so the install stays small. Full notes in [ATTRIBUTION.md](ATTRIBUTION.md).
+Art and interface/gun audio by [Kenney](https://kenney.nl) (CC0). Menu music stays a synthesized drone; a second synthesized pulse plays during levels so the install stays small. Full notes in [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## Deploy (GitHub + Vercel)
 

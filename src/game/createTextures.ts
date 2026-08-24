@@ -136,6 +136,17 @@ export function createGeneratedTextures(scene: Phaser.Scene): void {
     ctx.fill()
   })
 
+  paint(scene, 'blood-pool', 48, 32, (ctx, w, h) => {
+    ctx.fillStyle = 'rgba(127,29,29,0.9)'
+    ctx.beginPath()
+    ctx.ellipse(w / 2, h / 2, 21, 12, 0.18, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = 'rgba(69,10,10,0.75)'
+    ctx.beginPath()
+    ctx.ellipse(w / 2 + 5, h / 2 + 2, 11, 6, -0.35, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
   paint(scene, 'gib-flesh', 8, 6, (ctx) => {
     ctx.fillStyle = '#9f1239'
     ctx.fillRect(1, 1, 6, 4)
