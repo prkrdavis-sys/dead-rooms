@@ -51,3 +51,16 @@ Charge Packs (`9`): tap fire to plant, **hold fire** to detonate. Explosions hur
 ## Credits
 
 Art and interface/gun audio by [Kenney](https://kenney.nl) (CC0). Combat music is synthesized in the browser so the install stays small. Full notes in [ATTRIBUTION.md](ATTRIBUTION.md).
+
+## Deploy (GitHub + Vercel)
+
+Vercel treats this as a Vite app (`vercel.json`). After the GitHub repo exists:
+
+```bash
+# From a machine logged into GitHub and Vercel
+npx vercel login
+npx vercel link --yes
+npx vercel --prod --yes
+```
+
+Or import `parker-davis/dead-rooms` at [vercel.com/new](https://vercel.com/new) with Framework Preset **Vite**, output **dist**.
