@@ -160,8 +160,9 @@ export class PlayScene extends Phaser.Scene {
     this.emitHud()
 
     if (import.meta.env.DEV) {
-      const w = window as Window & { __killPlayer?: () => void }
+      const w = window as Window & { __killPlayer?: () => void; __hurtPlayer?: (amount?: number) => void }
       w.__killPlayer = () => this.die()
+      w.__hurtPlayer = (amount = 20) => this.hurt(amount)
     }
 
     this.offs.push(
@@ -193,8 +194,9 @@ export class PlayScene extends Phaser.Scene {
       this.offs = []
       this.flushGraveyard()
       if (import.meta.env.DEV) {
-        const w = window as Window & { __killPlayer?: () => void }
+        const w = window as Window & { __killPlayer?: () => void; __hurtPlayer?: (amount?: number) => void }
         if (w.__killPlayer) w.__killPlayer = undefined
+        if (w.__hurtPlayer) w.__hurtPlayer = undefined
       }
     })
   }
@@ -211,7 +213,7 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (this.dead) {
-      this.player.setVelocity(0, 0)
+      this.haltPlayerMotion()
       return
     }
 
@@ -754,93 +756,118 @@ export class PlayScene extends Phaser.Scene {
     this.health = Math.max(0, this.health - amount)
     this.nextHurt = this.now + 380
     this.invulnUntil = this.now + 280
-    this.cameras.main.flash(80, 120, 20, 20, false)
+    if (this.health <= 0) {
+      this.die()
+      return
+    }
+    this.flashHurt()
     this.playSfx('empty', 0.35)
-    if (this.health <= 0) this.die()
   }
 
   private die(): void {
     if (this.dead) return
     this.dead = true
     this.health = 0
-    this.player.setVelocity(0, 0)
-    this.player.setAlpha(1)
-    this.player.clearTint()
-    this.freezeCombat()
-    this.splatter(this.player.x, this.player.y)
-    const pool = this.add
-      .image(this.player.x, this.player.y + 8, 'blood-pool')
-      .setDepth(2)
-      .setScale(0.35)
-      .setAlpha(0)
-      .setRotation(this.player.rotation)
-    this.tweens.add({
-      targets: pool,
-      alpha: 0.88,
-      scale: 1.7,
-      duration: 580,
-      ease: 'Quad.easeOut',
-    })
-    this.cameras.main.shake(280, 0.012)
-    this.cameras.main.flash(140, 90, 10, 10, false)
-    this.cameras.main.zoomTo(Math.min(this.cameras.main.zoom * 1.22, 1.4), 1000)
-    this.playSfx('death-hit', 0.55)
-    this.time.delayedCall(420, () => {
-      if (this.player.active) this.playSfx('death-drop', 0.5)
-    })
-
-    this.player.anims.stop()
-    if (this.anims.exists(SOLDIER_DEATH_ANIM)) {
-      this.player.setTexture(SOLDIER_DEATH_ANIM, 0)
-      applyCharBody(this.player, 12)
-      this.player.play(SOLDIER_DEATH_ANIM)
-    } else {
-      this.player.setTint(0x7f1d1d)
-    }
-    this.tweens.add({
-      targets: this.player,
-      scaleX: 1.18,
-      scaleY: 0.42,
-      angle: this.player.angle + 55,
-      duration: 820,
-      ease: 'Cubic.easeIn',
-    })
-    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      if (this.player.active) this.player.setTint(0x6b1212)
-    })
-
     this.banner = null
+    this.haltPlayerMotion()
+    this.player.clearTint()
     this.emitHud()
     bus.emit('dying', true)
+    this.time.delayedCall(1500, () => this.reportGameOver())
+    // Death can fire from an overlap callback. Wait until the physics step
+    // finishes before reshaping sprites, spawning gibs, or pausing the world.
+    this.time.delayedCall(0, () => this.presentDeath())
+  }
 
-    this.time.delayedCall(1500, () => {
-      if (this.reported) return
-      this.reported = true
-      bus.emit('gameover', {
-        kills: this.kills,
-        timeSec: Math.floor(this.timeSec),
-        wave: this.wave,
-        score: this.score,
-      })
+  private reportGameOver(): void {
+    if (this.reported) return
+    this.reported = true
+    bus.emit('gameover', {
+      kills: this.kills,
+      timeSec: Math.floor(this.timeSec),
+      wave: this.wave,
+      score: this.score,
     })
   }
 
-  private freezeCombat(): void {
-    const halt = (sprite: Sprite) => {
-      if (sprite.active) sprite.setVelocity(0, 0)
+  private presentDeath(): void {
+    if (!this.sys.isActive()) return
+    try {
+      this.freezeCombat()
+      this.physics.world.pause()
+      this.haltPlayerMotion()
+      if (this.player.body) this.player.body.enable = false
+
+      this.splatter(this.player.x, this.player.y)
+      const pool = this.add
+        .image(this.player.x, this.player.y + 8, 'blood-pool')
+        .setDepth(2)
+        .setScale(0.35)
+        .setAlpha(0)
+        .setRotation(this.player.rotation)
+      this.tweens.add({
+        targets: pool,
+        alpha: 0.88,
+        scale: 1.7,
+        duration: 580,
+        ease: 'Quad.easeOut',
+      })
+
+      const cam = this.cameras.main
+      cam.resetFX()
+      cam.shake(220, 0.008)
+      cam.flash(100, 90, 10, 10, true)
+      cam.zoomTo(Phaser.Math.Clamp(cam.zoom * 1.1, 0.7, 1.25), 700)
+      this.playSfx('death-hit', 0.55)
+      this.time.delayedCall(420, () => {
+        if (this.sys.isActive() && this.player.active) this.playSfx('death-drop', 0.5)
+      })
+
+      this.player.setScale(1)
+      this.player.setDepth(12)
+      this.player.anims.stop()
+      if (this.anims.exists(SOLDIER_DEATH_ANIM) && this.textures.exists(SOLDIER_DEATH_ANIM)) {
+        this.player.setTexture(SOLDIER_DEATH_ANIM, 0)
+        this.player.play(SOLDIER_DEATH_ANIM)
+      } else {
+        this.player.setTint(0x7f1d1d)
+      }
+      this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        if (this.player.active) this.player.setTint(0x6b1212)
+      })
+    } catch {
+      this.player.setVisible(true)
+      this.player.setAlpha(1)
+      this.player.setTint(0x7f1d1d)
     }
-    this.enemies.children.iterate((child) => {
-      halt(child as Sprite)
-      return true
-    })
-    this.bullets.children.iterate((child) => {
-      halt(child as Sprite)
-      return true
-    })
-    this.enemyShots.children.iterate((child) => {
-      halt(child as Sprite)
-      return true
-    })
+  }
+
+  private haltPlayerMotion(): void {
+    if (!this.player) return
+    if (!Number.isFinite(this.player.x) || !Number.isFinite(this.player.y)) {
+      this.player.setPosition(this.playerStart.x, this.playerStart.y)
+    }
+    if (this.player.body) this.player.setVelocity(0, 0)
+    this.player.setAlpha(1)
+    this.player.setVisible(true)
+  }
+
+  private flashHurt(): void {
+    try {
+      this.cameras.main.flash(80, 120, 20, 20, true)
+    } catch {
+      /* camera FX can already be running after a burst of hits */
+    }
+  }
+
+  private freezeCombat(): void {
+    const halt = (sprite: Sprite | undefined) => {
+      if (!sprite?.active || !sprite.body) return
+      sprite.setVelocity(0, 0)
+    }
+    for (const child of this.enemies.getChildren().slice()) halt(child as Sprite)
+    for (const child of this.bullets.getChildren().slice()) halt(child as Sprite)
+    for (const child of this.enemyShots.getChildren().slice()) halt(child as Sprite)
   }
 
   private damageEnemy(enemy: Sprite, amount: number): void {
@@ -1248,7 +1275,16 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private playSfx(key: string, vol: number): void {
-    this.sound.play(key, { volume: vol * this.run.sfx })
+    const volume = vol * this.run.sfx
+    if (volume <= 0) return
+    try {
+      const sounds = this.sound.getAll(key)
+      const idle = sounds.find((sound) => !sound.isPlaying)
+      const sound = idle ?? (sounds.length < 6 ? this.sound.add(key) : sounds[0])
+      sound?.play({ volume })
+    } catch {
+      /* WebAudio can throw after a long burst of overlapping cues */
+    }
   }
 
   private emitHud(): void {
