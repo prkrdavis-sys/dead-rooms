@@ -1114,7 +1114,7 @@ export class PlayScene extends Phaser.Scene {
         y: y + Math.sin(angle + jitter) * dist,
         alpha: 0,
         scale: 0.2,
-        duration: 80 + Math.random() * 90,
+        duration: 140 + Math.random() * 120,
         onComplete: () => spark.destroy(),
       })
     }
