@@ -732,14 +732,28 @@ export class PlayScene extends Phaser.Scene {
   private die(): void {
     if (this.dead) return
     this.dead = true
+    this.health = 0
     this.player.setVelocity(0, 0)
     this.player.setAlpha(1)
     this.player.clearTint()
     this.freezeCombat()
     this.splatter(this.player.x, this.player.y)
-    this.cameras.main.shake(320, 0.014)
-    this.cameras.main.flash(220, 110, 12, 12, false)
-    this.cameras.main.zoomTo(Math.min(this.cameras.main.zoom * 1.22, 1.4), 900)
+    const pool = this.add
+      .image(this.player.x, this.player.y + 8, 'blood-pool')
+      .setDepth(2)
+      .setScale(0.35)
+      .setAlpha(0)
+      .setRotation(this.player.rotation)
+    this.tweens.add({
+      targets: pool,
+      alpha: 0.88,
+      scale: 1.7,
+      duration: 580,
+      ease: 'Quad.easeOut',
+    })
+    this.cameras.main.shake(280, 0.012)
+    this.cameras.main.flash(140, 90, 10, 10, false)
+    this.cameras.main.zoomTo(Math.min(this.cameras.main.zoom * 1.22, 1.4), 1000)
     this.playSfx('death-hit', 0.55)
     this.time.delayedCall(420, () => {
       if (this.player.active) this.playSfx('death-drop', 0.5)
@@ -755,24 +769,21 @@ export class PlayScene extends Phaser.Scene {
     }
     this.tweens.add({
       targets: this.player,
-      scaleY: 0.72,
-      duration: 720,
+      scaleX: 1.18,
+      scaleY: 0.42,
+      angle: this.player.angle + 55,
+      duration: 820,
       ease: 'Cubic.easeIn',
     })
     this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      if (this.player.active) this.player.setTint(0x7f1d1d)
+      if (this.player.active) this.player.setTint(0x6b1212)
     })
 
     this.banner = null
     this.emitHud()
     bus.emit('dying', true)
 
-    if (import.meta.env.DEV) {
-      const w = window as Window & { __killPlayer?: () => void }
-      w.__killPlayer = undefined
-    }
-
-    this.time.delayedCall(1250, () => {
+    this.time.delayedCall(1500, () => {
       if (this.reported) return
       this.reported = true
       bus.emit('gameover', {

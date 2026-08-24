@@ -242,7 +242,7 @@ function buildSoldierDeath(scene: Phaser.Scene): void {
     paintDeath(ctx, img, i, i * CHAR_FRAME_W)
   }
   addSheet(scene, SOLDIER_DEATH_ANIM, canvas, DEATH_FRAMES)
-  makeAnim(scene, SOLDIER_DEATH_ANIM, SOLDIER_DEATH_ANIM, 0, DEATH_FRAMES - 1, 10, 0)
+  makeAnim(scene, SOLDIER_DEATH_ANIM, SOLDIER_DEATH_ANIM, 0, DEATH_FRAMES - 1, 8, 0)
 }
 
 function buildEnemyPack(scene: Phaser.Scene, packId: CharacterPackId): void {

@@ -21,8 +21,38 @@ export class SynthMusic {
   }
 
   async unlock(): Promise<void> {
+    const closed = this.ctx?.state === 'closed'
+    if (closed) {
+      this.ctx = null
+      this.master = null
+      this.stopVoices()
+    }
     const ctx = this.ensure()
-    if (ctx.state === 'suspended') await ctx.resume()
+    if (ctx.state === 'suspended') {
+      try {
+        await ctx.resume()
+      } catch {
+        return
+      }
+    }
+    if (closed) {
+      const restart = this.mode
+      this.mode = 'off'
+      switch (restart) {
+        case 'menu':
+          await this.playMenu()
+          break
+        case 'combat':
+          await this.playCombat()
+          break
+        case 'off':
+          break
+        default: {
+          const _never: never = restart
+          void _never
+        }
+      }
+    }
   }
 
   setVolume(volume: number): void {
