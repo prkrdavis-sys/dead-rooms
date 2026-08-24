@@ -1,5 +1,11 @@
 const SCROLL_OVERFLOW = new Set(['auto', 'scroll', 'overlay'])
 
+let joystickCaptured = false
+
+export function setJoystickCapture(active: boolean) {
+  joystickCaptured = active
+}
+
 function overflowAllowsScroll(value: string): boolean {
   return SCROLL_OVERFLOW.has(value)
 }
@@ -23,7 +29,15 @@ function canScroll(el: Element, dx: number, dy: number): boolean {
   return false
 }
 
+function closestElement(target: EventTarget | null, selector: string): Element | null {
+  return target instanceof Element ? target.closest(selector) : null
+}
+
 function touchScrollAllowed(target: EventTarget | null, dx: number, dy: number): boolean {
+  if (joystickCaptured || closestElement(target, '[data-joystick]')) return false
+  if (closestElement(target, '[data-play-locked]') && !closestElement(target, '[data-allow-touch-scroll]')) {
+    return false
+  }
   let el = target instanceof Element ? target : null
   while (el && el !== document.documentElement && el !== document.body) {
     if (canScroll(el, dx, dy)) return true
@@ -43,13 +57,18 @@ export function lockViewport(): () => void {
 
   const onTouchStart = (event: TouchEvent) => {
     const touch = event.touches[0]
-    if (!touch) return
-    lastX = touch.clientX
-    lastY = touch.clientY
+    if (touch) {
+      lastX = touch.clientX
+      lastY = touch.clientY
+    }
+    if (closestElement(event.target, '[data-joystick]')) {
+      joystickCaptured = true
+      preventIfCancelable(event)
+    }
   }
 
   const onTouchMove = (event: TouchEvent) => {
-    if (event.touches.length > 1) {
+    if (event.touches.length > 1 || joystickCaptured) {
       preventIfCancelable(event)
       return
     }
@@ -67,8 +86,14 @@ export function lockViewport(): () => void {
     }
   }
 
-  document.addEventListener('touchstart', onTouchStart, { passive: true, capture: true })
+  const onTouchEnd = (event: TouchEvent) => {
+    if (event.touches.length === 0) joystickCaptured = false
+  }
+
+  document.addEventListener('touchstart', onTouchStart, { passive: false, capture: true })
   document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true })
+  document.addEventListener('touchend', onTouchEnd, { capture: true })
+  document.addEventListener('touchcancel', onTouchEnd, { capture: true })
   for (const name of ['gesturestart', 'gesturechange', 'gestureend'] as const) {
     document.addEventListener(name, preventIfCancelable)
   }
@@ -76,8 +101,11 @@ export function lockViewport(): () => void {
   return () => {
     document.removeEventListener('touchstart', onTouchStart, true)
     document.removeEventListener('touchmove', onTouchMove, true)
+    document.removeEventListener('touchend', onTouchEnd, true)
+    document.removeEventListener('touchcancel', onTouchEnd, true)
     for (const name of ['gesturestart', 'gesturechange', 'gestureend'] as const) {
       document.removeEventListener(name, preventIfCancelable)
     }
+    joystickCaptured = false
   }
 }
