@@ -3,6 +3,7 @@ import type { RunConfig } from './game/types'
 import { music } from './lib/music'
 import {
   activeProfile,
+  difficultyValue,
   effectiveMusic,
   effectiveSfx,
   loadProfiles,
@@ -32,7 +33,7 @@ export default function App() {
   const [setup, setSetup] = useState<SetupValue>({
     mapId: 'warehouse',
     specialId: 'dash',
-    difficulty: 4,
+    difficulty: difficultyValue('standard'),
   })
   const [run, setRun] = useState<RunConfig | null>(null)
   const [runKey, setRunKey] = useState(0)

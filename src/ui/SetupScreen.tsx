@@ -1,5 +1,7 @@
 import { MAPS, type MapId } from '../data/maps'
 import { SPECIALS, type SpecialId } from '../data/specials'
+import { DIFFICULTY_LEVELS } from '../lib/storage'
+import { ChoiceRow } from './ChoiceRow'
 
 export type SetupValue = {
   mapId: MapId
@@ -56,19 +58,14 @@ export function SetupScreen({ value, onChange, onStart, onBack }: SetupScreenPro
         </div>
       </section>
       <section className="panel p-4">
-        <div className="mb-2 flex justify-between text-xs uppercase tracking-[0.16em] text-[#b8a38d]">
-          <span>Difficulty — how many come per round</span>
-          <span>{value.difficulty}</span>
-        </div>
-        <input
-          type="range"
-          min={1}
-          max={10}
+        <ChoiceRow
+          label="Difficulty — how many come per round"
           value={value.difficulty}
-          onChange={(event) => onChange({ ...value, difficulty: Number(event.target.value) })}
+          options={DIFFICULTY_LEVELS.map((level) => ({ value: level.value, label: level.label }))}
+          onChange={(difficulty) => onChange({ ...value, difficulty })}
         />
         <p className="mt-2 mb-0 text-sm text-[#d6c7b0]">
-          1 is a warm-up. 10 is a meat grinder. Enemy counts scale; the tells stay honest.
+          Warm-up is a handful. Meat grinder floods the room. Enemy counts scale; the tells stay honest.
         </p>
       </section>
       <button className="btn btn-primary py-4 text-lg tracking-[0.18em]" onClick={onStart}>
