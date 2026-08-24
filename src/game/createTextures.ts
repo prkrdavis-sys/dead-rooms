@@ -201,4 +201,203 @@ export function createGeneratedTextures(scene: Phaser.Scene): void {
     ctx.lineTo(w / 2, h / 2 + 8)
     ctx.stroke()
   })
+
+  paint(scene, 'casing', 5, 3, (ctx) => {
+    ctx.fillStyle = '#d4a017'
+    ctx.fillRect(0, 0, 5, 3)
+    ctx.fillStyle = '#fde68a'
+    ctx.fillRect(0, 0, 2, 3)
+  })
+
+  paint(scene, 'spark', 6, 6, (ctx, w, h) => {
+    ctx.fillStyle = '#fff7ed'
+    ctx.fillRect(2, 0, 2, h)
+    ctx.fillRect(0, 2, w, 2)
+  })
+
+  paint(scene, 'muzzle-pistol', 28, 18, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(6, h / 2, 1, 10, h / 2, 12)
+    g.addColorStop(0, 'rgba(255,255,255,0.95)')
+    g.addColorStop(0.35, 'rgba(253,224,71,0.9)')
+    g.addColorStop(1, 'rgba(245,158,11,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.moveTo(2, h / 2)
+    ctx.lineTo(w - 4, 2)
+    ctx.lineTo(12, h / 2)
+    ctx.lineTo(w - 4, h - 2)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.9)'
+    ctx.beginPath()
+    ctx.arc(6, h / 2, 3.2, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'muzzle-smg', 26, 12, (ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, w, 0)
+    g.addColorStop(0, 'rgba(255,255,255,0.95)')
+    g.addColorStop(0.4, 'rgba(125,211,252,0.75)')
+    g.addColorStop(1, 'rgba(14,165,233,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.moveTo(1, h / 2)
+    ctx.lineTo(w, 2)
+    ctx.lineTo(w, h - 2)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(1, h / 2 - 1.5, 8, 3)
+  })
+
+  paint(scene, 'muzzle-shotgun', 42, 32, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(4, h / 2, 2, 18, h / 2, 22)
+    g.addColorStop(0, 'rgba(255,247,237,0.95)')
+    g.addColorStop(0.3, 'rgba(251,146,60,0.8)')
+    g.addColorStop(1, 'rgba(194,65,12,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.moveTo(2, h / 2)
+    ctx.lineTo(w - 2, 1)
+    ctx.lineTo(w * 0.45, h / 2)
+    ctx.lineTo(w - 2, h - 1)
+    ctx.closePath()
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(254,215,170,0.85)'
+    ctx.lineWidth = 2
+    for (let i = 0; i < 5; i += 1) {
+      const t = i / 4 - 0.5
+      ctx.beginPath()
+      ctx.moveTo(4, h / 2)
+      ctx.lineTo(w - 3, h / 2 + t * (h - 4))
+      ctx.stroke()
+    }
+  })
+
+  paint(scene, 'muzzle-barrel', 36, 36, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, 16)
+    g.addColorStop(0, 'rgba(253,224,71,0.7)')
+    g.addColorStop(0.45, 'rgba(120,113,108,0.55)')
+    g.addColorStop(1, 'rgba(68,64,60,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = 'rgba(168,162,158,0.5)'
+    ctx.beginPath()
+    ctx.ellipse(w / 2 - 4, h / 2 + 3, 10, 6, -0.3, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'muzzle-grenade', 30, 30, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, 13)
+    g.addColorStop(0, 'rgba(190,242,100,0.7)')
+    g.addColorStop(0.5, 'rgba(63,98,18,0.45)')
+    g.addColorStop(1, 'rgba(20,83,45,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = 'rgba(163,163,163,0.7)'
+    ctx.fillRect(w / 2 - 2, 4, 4, 6)
+  })
+
+  paint(scene, 'muzzle-barricade', 34, 24, (ctx, w, h) => {
+    ctx.fillStyle = 'rgba(168,162,158,0.55)'
+    ctx.fillRect(4, 8, w - 8, 8)
+    ctx.fillStyle = 'rgba(214,211,209,0.7)'
+    ctx.fillRect(4, 8, w - 8, 3)
+    ctx.fillStyle = 'rgba(87,83,78,0.4)'
+    ctx.beginPath()
+    ctx.ellipse(10, h - 6, 7, 4, 0, 0, Math.PI * 2)
+    ctx.ellipse(24, h - 5, 6, 3, 0, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'muzzle-mine', 24, 24, (ctx, w, h) => {
+    ctx.fillStyle = 'rgba(239,68,68,0.85)'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 6, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = 'rgba(254,202,202,0.9)'
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 2.5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(248,113,113,0.8)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(w / 2, 2)
+    ctx.lineTo(w / 2, h - 2)
+    ctx.moveTo(2, h / 2)
+    ctx.lineTo(w - 2, h / 2)
+    ctx.stroke()
+  })
+
+  paint(scene, 'muzzle-rocket', 48, 26, (ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, w, 0)
+    g.addColorStop(0, 'rgba(255,255,255,0.95)')
+    g.addColorStop(0.2, 'rgba(253,224,71,0.9)')
+    g.addColorStop(0.55, 'rgba(249,115,22,0.75)')
+    g.addColorStop(1, 'rgba(127,29,29,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.moveTo(1, h / 2)
+    ctx.lineTo(w, 1)
+    ctx.lineTo(w * 0.4, h / 2)
+    ctx.lineTo(w, h - 1)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = 'rgba(69,10,10,0.45)'
+    ctx.beginPath()
+    ctx.ellipse(w * 0.7, h / 2, 10, 6, 0, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'muzzle-charge', 32, 32, (ctx, w, h) => {
+    ctx.strokeStyle = 'rgba(34,211,238,0.95)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(w / 2, 3)
+    ctx.lineTo(w / 2 + 4, h / 2 - 4)
+    ctx.lineTo(w / 2 - 6, h / 2 - 2)
+    ctx.lineTo(w / 2 + 6, h / 2 + 4)
+    ctx.lineTo(w / 2, h - 3)
+    ctx.stroke()
+    const g = ctx.createRadialGradient(w / 2, h / 2, 1, w / 2, h / 2, 12)
+    g.addColorStop(0, 'rgba(207,250,254,0.9)')
+    g.addColorStop(1, 'rgba(8,145,178,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(w / 2, h / 2, 12, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'muzzle-railgun', 56, 16, (ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, w, 0)
+    g.addColorStop(0, 'rgba(236,254,255,1)')
+    g.addColorStop(0.35, 'rgba(103,232,249,0.9)')
+    g.addColorStop(1, 'rgba(14,116,144,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.moveTo(0, h / 2)
+    ctx.lineTo(w, 1)
+    ctx.lineTo(w, h - 1)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = '#ecfeff'
+    ctx.beginPath()
+    ctx.arc(5, h / 2, 4, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  paint(scene, 'muzzle-backblast', 36, 20, (ctx, w, h) => {
+    const g = ctx.createLinearGradient(w, 0, 0, 0)
+    g.addColorStop(0, 'rgba(255,237,213,0.85)')
+    g.addColorStop(0.4, 'rgba(234,88,12,0.55)')
+    g.addColorStop(1, 'rgba(69,10,10,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.moveTo(w - 1, h / 2)
+    ctx.lineTo(1, 1)
+    ctx.lineTo(w * 0.45, h / 2)
+    ctx.lineTo(1, h - 1)
+    ctx.closePath()
+    ctx.fill()
+  })
 }

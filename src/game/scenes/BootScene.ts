@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import { CHARACTER_PACKS, CHARACTER_POSES, characterUrl, rawTextureKey } from '../characterAssets'
+import { createCharacterAnims } from '../createAnims'
 import { createGeneratedTextures } from '../createTextures'
 
 export class BootScene extends Phaser.Scene {
@@ -7,13 +9,11 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('player-gun', '/assets/kenney/characters/soldier/soldier1_gun.png')
-    this.load.image('player-machine', '/assets/kenney/characters/soldier/soldier1_machine.png')
-    this.load.image('zombie-hold', '/assets/kenney/characters/zombie/zoimbie1_hold.png')
-    this.load.image('runner-hold', '/assets/kenney/characters/runner/womanGreen_hold.png')
-    this.load.image('robot-hold', '/assets/kenney/characters/robot/robot1_hold.png')
-    this.load.image('blinker-hold', '/assets/kenney/characters/blinker/manOld_hold.png')
-    this.load.image('wraps-hold', '/assets/kenney/characters/wraps/manBrown_hold.png')
+    for (const pack of CHARACTER_PACKS) {
+      for (const pose of CHARACTER_POSES) {
+        this.load.image(rawTextureKey(pack.id, pose), characterUrl(pack, pose))
+      }
+    }
 
     this.load.audio('ui-click', '/assets/kenney/audio/click_001.ogg')
     this.load.audio('ui-ok', '/assets/kenney/audio/confirmation_001.ogg')
@@ -31,6 +31,7 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     createGeneratedTextures(this)
+    createCharacterAnims(this)
     this.scene.start('play')
   }
 }

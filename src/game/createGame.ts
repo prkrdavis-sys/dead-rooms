@@ -26,5 +26,8 @@ export function createDeadRoomsGame(parent: HTMLElement, run: RunConfig): Phaser
     disableContextMenu: true,
   })
   game.registry.set('run', run)
+  if (import.meta.env.DEV) {
+    ;(window as Window & { __deadRooms?: Phaser.Game }).__deadRooms = game
+  }
   return game
 }
