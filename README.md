@@ -4,6 +4,23 @@ A 2.5D wave-survival shooter for the browser, inspired by the old Flash rooms of
 
 It is a self-contained **Progressive Web App**. You can install it to a phone home screen and play offline after the first load.
 
+## Work locally (Cursor)
+
+Clone this repo onto your machine and open the folder in Cursor Desktop. Use **Local** Agent (this computer) — not Cloud Agents.
+
+```bash
+git clone https://github.com/prkrdavis-sys/dead-rooms.git
+cd dead-rooms
+npm install
+npm run dev
+```
+
+Then **File → Open Folder** on that directory. Agent shortcut: **Cmd+I** (Mac) or **Ctrl+I** (Windows/Linux). Keep the composer environment on this computer.
+
+To prefer Local by default: **Cursor Settings → Agents → Conversation → Default Environment** → this machine.
+
+Project instructions for Desktop Agent, CLI, and local worktrees live in [AGENTS.md](AGENTS.md). Isolated local agents can use `/worktree`; `.cursor/worktrees.json` runs `npm ci` in each worktree.
+
 ## Play
 
 ```bash
