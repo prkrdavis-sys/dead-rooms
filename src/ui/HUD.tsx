@@ -49,7 +49,10 @@ export function HUD({ hud, onPause, touch }: HUDProps) {
         </div>
       )}
       {touch && (
-        <div className="pointer-events-auto absolute inset-x-0 top-[5.6rem] z-10 flex gap-1 overflow-x-auto overscroll-contain px-2 pb-1 [touch-action:pan-x]">
+        <div
+          data-allow-touch-scroll
+          className="pointer-events-auto absolute inset-x-0 top-[5.6rem] z-10 flex gap-1 overflow-x-auto overscroll-contain px-2 pb-1 [touch-action:pan-x]"
+        >
           {WEAPONS.map((weapon) => (
             <button
               key={weapon.id}

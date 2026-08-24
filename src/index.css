@@ -151,7 +151,8 @@ button.panel {
   background: linear-gradient(90deg, #7f1d1d, #ef4444);
 }
 
-canvas {
+canvas,
+[data-joystick] {
   touch-action: none;
 }
 
