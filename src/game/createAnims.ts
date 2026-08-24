@@ -213,16 +213,15 @@ function paintDeath(
   ctx.beginPath()
   ctx.rect(0, 0, CHAR_FRAME_W, CHAR_FRAME_H)
   ctx.clip()
-  drawFeet(ctx, t * 2, 2 + collapse * 4, 0.35 + t * 0.4)
+  drawFeet(ctx, t * 2, 2 + collapse * 2, 0.35 + t * 0.25)
   ctx.save()
-  ctx.translate(CHAR_BODY.x + stumble * 4, CHAR_BODY.y + collapse * 5)
-  ctx.rotate(-collapse * 1.05)
-  ctx.scale(1 + collapse * 0.06, 1 - collapse * 0.38)
+  ctx.translate(CHAR_BODY.x + stumble * 3, CHAR_BODY.y + collapse * 2)
+  ctx.rotate(-collapse * 0.32)
   ctx.translate(-CHAR_BODY.x, -CHAR_BODY.y)
-  ctx.drawImage(img, CHAR_STAMP.x - collapse * 2, CHAR_STAMP.y + collapse * 3)
+  ctx.drawImage(img, CHAR_STAMP.x, CHAR_STAMP.y + collapse * 2)
   ctx.restore()
   ctx.globalCompositeOperation = 'source-atop'
-  ctx.fillStyle = `rgba(90, 8, 8, ${collapse * 0.4})`
+  ctx.fillStyle = `rgba(90, 8, 8, ${collapse * 0.16})`
   ctx.fillRect(0, 0, CHAR_FRAME_W, CHAR_FRAME_H)
   ctx.globalCompositeOperation = 'source-over'
   ctx.restore()

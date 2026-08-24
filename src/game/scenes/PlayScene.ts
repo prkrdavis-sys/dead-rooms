@@ -800,24 +800,21 @@ export class PlayScene extends Phaser.Scene {
 
       this.splatter(this.player.x, this.player.y)
       const pool = this.add
-        .image(this.player.x, this.player.y + 8, 'blood-pool')
+        .image(this.player.x, this.player.y + 10, 'blood-pool')
         .setDepth(2)
-        .setScale(0.35)
+        .setScale(0.4)
         .setAlpha(0)
-        .setRotation(this.player.rotation)
       this.tweens.add({
         targets: pool,
-        alpha: 0.88,
-        scale: 1.7,
-        duration: 580,
+        alpha: 0.5,
+        scale: 0.95,
+        duration: 480,
         ease: 'Quad.easeOut',
       })
 
       const cam = this.cameras.main
       cam.resetFX()
-      cam.shake(220, 0.008)
-      cam.flash(100, 90, 10, 10, true)
-      cam.zoomTo(Phaser.Math.Clamp(cam.zoom * 1.1, 0.7, 1.25), 700)
+      cam.shake(160, 0.004)
       this.playSfx('death-hit', 0.55)
       this.time.delayedCall(420, () => {
         if (this.sys.isActive() && this.player.active) this.playSfx('death-drop', 0.5)
@@ -825,16 +822,14 @@ export class PlayScene extends Phaser.Scene {
 
       this.player.setScale(1)
       this.player.setDepth(12)
+      this.player.clearTint()
       this.player.anims.stop()
       if (this.anims.exists(SOLDIER_DEATH_ANIM) && this.textures.exists(SOLDIER_DEATH_ANIM)) {
         this.player.setTexture(SOLDIER_DEATH_ANIM, 0)
         this.player.play(SOLDIER_DEATH_ANIM)
       } else {
-        this.player.setTint(0x7f1d1d)
+        this.player.setTint(0xc45c5c)
       }
-      this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-        if (this.player.active) this.player.setTint(0x6b1212)
-      })
     } catch {
       this.player.setVisible(true)
       this.player.setAlpha(1)
