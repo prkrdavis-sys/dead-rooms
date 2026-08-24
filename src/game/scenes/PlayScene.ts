@@ -11,7 +11,7 @@ import {
   type WeaponSlot,
 } from '../../data/weapons'
 import { bus, type HudState } from '../../lib/bus'
-import { applyCharBody, SOLDIER_DEATH_ANIM } from '../createAnims'
+import { applyCharBody } from '../createAnims'
 import { soldierSheetKey } from '../characterAssets'
 import { PLAYER_MAX_HP, type RunConfig } from '../types'
 import { poseForWeapon, shotFxFor, worldFromLocal } from '../weaponView'
@@ -773,7 +773,7 @@ export class PlayScene extends Phaser.Scene {
     this.player.clearTint()
     this.emitHud()
     bus.emit('dying', true)
-    this.time.delayedCall(1500, () => this.reportGameOver())
+    this.time.delayedCall(800, () => this.reportGameOver())
     // Death can fire from an overlap callback. Wait until the physics step
     // finishes before reshaping sprites, spawning gibs, or pausing the world.
     this.time.delayedCall(0, () => this.presentDeath())
@@ -821,15 +821,11 @@ export class PlayScene extends Phaser.Scene {
       })
 
       this.player.setScale(1)
-      this.player.setDepth(12)
-      this.player.clearTint()
+      this.player.setDepth(18)
       this.player.anims.stop()
-      if (this.anims.exists(SOLDIER_DEATH_ANIM) && this.textures.exists(SOLDIER_DEATH_ANIM)) {
-        this.player.setTexture(SOLDIER_DEATH_ANIM, 0)
-        this.player.play(SOLDIER_DEATH_ANIM)
-      } else {
-        this.player.setTint(0xc45c5c)
-      }
+      // Keep the current pose. The collapse sheet reads as a smear and made
+      // killing blows look like the soldier deleted himself.
+      this.player.setTint(0xc45c5c)
     } catch {
       this.player.setVisible(true)
       this.player.setAlpha(1)

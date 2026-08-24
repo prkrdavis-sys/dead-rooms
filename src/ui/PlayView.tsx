@@ -55,7 +55,13 @@ export function PlayView({ run, onExit, onAgain, onOpenSettings }: PlayViewProps
       <GameCanvas run={run} />
       <HUD hud={over ? null : hud} touch={showTouch} onPause={() => bus.emit('pauseToggle', true)} />
       <TouchControls visible={showTouch && !locked} />
-      {dying && !over && <div className="death-vignette pointer-events-none absolute inset-0 z-20" />}
+      {dying && !over && (
+        <div className="death-vignette pointer-events-none absolute inset-0 z-20 grid place-items-center">
+          <p className="death-title m-0" role="status" aria-live="assertive">
+            You died
+          </p>
+        </div>
+      )}
       {paused && !locked && (
         <div className="absolute inset-0 z-30 grid place-items-center bg-black/70 p-4">
           <div className="panel w-full max-w-sm p-5 text-center">
