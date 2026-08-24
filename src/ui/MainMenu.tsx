@@ -36,9 +36,8 @@ export function MainMenu({
     <div className="relative h-full overflow-y-auto overscroll-contain touch-pan-y">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#4a1510_0%,#0c0808_55%)]" />
       <div className="relative mx-auto flex min-h-full w-full max-w-xl flex-col justify-between px-5 py-8">
-        <header>
-          <p className="m-0 text-xs uppercase tracking-[0.35em] text-[#d4a017]">Quarantine arcade</p>
-          <h1 className="mt-2 mb-2 text-5xl leading-none tracking-[0.12em] uppercase sm:text-6xl">Dead Rooms</h1>
+        <header className="font-apoc">
+          <h1 className="mb-3 font-horror text-5xl leading-none tracking-wide uppercase sm:text-7xl">Dead Rooms</h1>
           <p className="max-w-md text-sm leading-relaxed text-[#d6c7b0] sm:text-base">
             Pick a sealed room. Walk with WASD. Shoot the way you are facing. The dead do not learn, but they do multiply.
           </p>

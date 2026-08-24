@@ -10,7 +10,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/*', 'assets/**/*', 'favicon.svg'],
+      includeAssets: ['icons/*', 'assets/**/*', 'favicon.svg', 'fonts/*'],
       manifest: {
         name: 'Dead Rooms',
         short_name: 'Dead Rooms',
@@ -45,7 +45,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,ogg,mp3,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,ogg,mp3,webmanifest,woff2}'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: '/index.html',
       },
