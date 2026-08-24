@@ -11,7 +11,10 @@ import {
   type WeaponSlot,
 } from '../../data/weapons'
 import { bus, type HudState } from '../../lib/bus'
+import { applyCharBody } from '../createAnims'
+import { soldierSheetKey } from '../characterAssets'
 import { PLAYER_MAX_HP, type RunConfig } from '../types'
+import { poseForWeapon, shotFxFor, worldFromLocal } from '../weaponView'
 
 type EnemyBrain = {
   id: EnemyId
@@ -58,6 +61,8 @@ export class PlayScene extends Phaser.Scene {
   private keyShift!: Phaser.Input.Keyboard.Key
 
   private facing = { x: 0, y: -1 }
+  private moving = false
+  private fireUntil = 0
   private touchMove = { x: 0, y: 0 }
   private fireHeld = false
   private specialHeld = false
@@ -133,12 +138,14 @@ export class PlayScene extends Phaser.Scene {
 
     this.stampFloorsAndWalls()
 
-    this.player = this.physics.add.sprite(this.playerStart.x, this.playerStart.y, 'player-gun')
+    this.player = this.physics.add.sprite(this.playerStart.x, this.playerStart.y, 'soldier-gun', 0)
     this.player.setDepth(12)
     this.player.setCollideWorldBounds(true)
-    this.player.setCircle(12, this.player.width / 2 - 12, this.player.height / 2 - 12)
+    applyCharBody(this.player, 12)
     this.player.setDamping(true)
     this.player.setDrag(0.0008)
+    this.player.setRotation(Math.atan2(this.facing.y, this.facing.x))
+    this.player.play('soldier-gun-idle')
 
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
     this.cameras.main.setZoom(this.mobileCap ? 0.82 : 1)
@@ -313,8 +320,11 @@ export class PlayScene extends Phaser.Scene {
   private equip(slot: WeaponSlot): void {
     this.slot = slot
     const def = WEAPON_BY_SLOT[slot]
-    const heavy = def.id === 'smg' || def.id === 'rocket' || def.id === 'railgun' || def.id === 'shotgun'
-    this.player.setTexture(heavy ? 'player-machine' : 'player-gun')
+    const sheet = soldierSheetKey(poseForWeapon(def.id))
+    this.player.setTexture(sheet, 0)
+    applyCharBody(this.player, 12)
+    this.fireUntil = 0
+    this.syncPlayerAnim(true)
     this.playSfx('ui-click', 0.25)
   }
 
@@ -326,7 +336,8 @@ export class PlayScene extends Phaser.Scene {
     if (this.cursors.up.isDown || this.keyW.isDown) dy -= 1
     if (this.cursors.down.isDown || this.keyS.isDown) dy += 1
     const len = Math.hypot(dx, dy)
-    if (len > 0.08) {
+    this.moving = len > 0.08
+    if (this.moving) {
       dx /= len
       dy /= len
       this.facing.x = dx
@@ -338,12 +349,13 @@ export class PlayScene extends Phaser.Scene {
     const dashing = this.now < this.dashUntil
     const speed = dashing ? 420 : 178
     this.player.setVelocity(dx * speed, dy * speed)
-    this.player.setRotation(Math.atan2(this.facing.y, this.facing.x) + Math.PI / 2)
+    this.player.setRotation(Math.atan2(this.facing.y, this.facing.x))
     if (this.now < this.invulnUntil) {
       this.player.setAlpha(0.55 + 0.45 * Math.sin(this.now / 40))
     } else {
       this.player.setAlpha(1)
     }
+    this.syncPlayerAnim(false)
   }
 
   private handleFire(delta: number): void {
@@ -419,12 +431,19 @@ export class PlayScene extends Phaser.Scene {
     this.cooldownUntil = this.now + def.cooldownMs
     if (!def.infiniteAmmo) this.ammo[def.id] -= 1
 
-    const originX = this.player.x + this.facing.x * 22
-    const originY = this.player.y + this.facing.y * 22
+    const fx = shotFxFor(def.id)
+    const muzzle = worldFromLocal(
+      this.player.x,
+      this.player.y,
+      this.player.rotation,
+      fx.muzzle.x,
+      fx.muzzle.y,
+    )
+    this.playWeaponFire(def.id)
 
     switch (def.kind) {
       case 'gun':
-        this.spawnBullet(originX, originY, this.facing.x, this.facing.y, 'bullet', def.speed, def.damage, false)
+        this.spawnBullet(muzzle.x, muzzle.y, this.facing.x, this.facing.y, 'bullet', def.speed, def.damage, false)
         this.playSfx(def.id === 'smg' ? 'laser2' : 'laser1', 0.32)
         break
       case 'spread': {
@@ -434,8 +453,8 @@ export class PlayScene extends Phaser.Scene {
           const t = pellets === 1 ? 0 : i / (pellets - 1) - 0.5
           const ang = Math.atan2(this.facing.y, this.facing.x) + t * spread
           this.spawnBullet(
-            originX,
-            originY,
+            muzzle.x,
+            muzzle.y,
             Math.cos(ang),
             Math.sin(ang),
             'pellet',
@@ -448,15 +467,15 @@ export class PlayScene extends Phaser.Scene {
         break
       }
       case 'rocket':
-        this.spawnBullet(originX, originY, this.facing.x, this.facing.y, 'rocket', def.speed, def.damage, true, def.radius)
+        this.spawnBullet(muzzle.x, muzzle.y, this.facing.x, this.facing.y, 'rocket', def.speed, def.damage, true, def.radius)
         this.playSfx('laser9', 0.45)
         break
       case 'throw':
-        this.spawnBullet(originX, originY, this.facing.x, this.facing.y, 'grenade', def.speed, def.damage, true, def.radius, 820)
+        this.spawnBullet(muzzle.x, muzzle.y, this.facing.x, this.facing.y, 'grenade', def.speed, def.damage, true, def.radius, 820)
         this.playSfx('laser9', 0.3)
         break
       case 'rail':
-        this.fireRail(def)
+        this.fireRail(def, muzzle.x, muzzle.y)
         this.playSfx('zap1', 0.5)
         break
       case 'place':
@@ -523,6 +542,7 @@ export class PlayScene extends Phaser.Scene {
       }
     }
     this.playSfx('ui-click', 0.35)
+    this.playWeaponFire(def.id)
   }
 
   private detonateCharges(): void {
@@ -565,9 +585,9 @@ export class PlayScene extends Phaser.Scene {
     else bullet.setCircle(Math.max(3, bullet.width / 2 - 1))
   }
 
-  private fireRail(def: WeaponDef): void {
-    let x = this.player.x + this.facing.x * 16
-    let y = this.player.y + this.facing.y * 16
+  private fireRail(def: WeaponDef, originX: number, originY: number): void {
+    let x = originX
+    let y = originY
     this.railA = { x, y }
     let endX = x
     let endY = y
@@ -816,7 +836,8 @@ export class PlayScene extends Phaser.Scene {
       const dist = Math.hypot(dx, dy) || 1
       const nx = dx / dist
       const ny = dy / dist
-      enemy.setRotation(Math.atan2(ny, nx) + Math.PI / 2)
+      enemy.setRotation(Math.atan2(ny, nx))
+      this.syncEnemyAnim(enemy, def.speed, brain.phase !== 'telegraph')
 
       if (def.attack === 'fireline') {
         if (brain.phase === 'telegraph') {
@@ -867,6 +888,7 @@ export class PlayScene extends Phaser.Scene {
     if (!shot) return
     shot.setActive(true).setVisible(true)
     shot.enableBody(true, x + dx * 18, y + dy * 18, true, true)
+    shot.setRotation(Math.atan2(dy, dx))
     shot.setVelocity(dx * 260, dy * 260)
     shot.setDepth(11)
     shot.setData('born', this.now)
@@ -965,8 +987,10 @@ export class PlayScene extends Phaser.Scene {
     enemy.setDepth(10)
     enemy.setScale(def.scale)
     enemy.setTint(def.tint)
-    enemy.setCircle(def.radius, enemy.width / 2 - def.radius, enemy.height / 2 - def.radius)
+    applyCharBody(enemy, def.radius)
     enemy.setBounce(0)
+    enemy.play(`${def.texture}-walk`)
+    enemy.anims.timeScale = Phaser.Math.Clamp(def.speed / 90, 0.55, 1.8)
     const extraHp = Math.round((this.wave - 1) * 3 * (0.4 + this.run.difficulty * 0.08))
     const brain: EnemyBrain = {
       id,
@@ -985,6 +1009,130 @@ export class PlayScene extends Phaser.Scene {
     const r = Math.floor(y / TILE)
     if (r < 0 || c < 0 || r >= this.rows || c >= this.cols) return true
     return Boolean(this.blocked[r]?.[c])
+  }
+
+  private syncPlayerAnim(force: boolean): void {
+    if (this.dead) return
+    const sheet = soldierSheetKey(poseForWeapon(WEAPON_BY_SLOT[this.slot].id))
+    const firing = this.now < this.fireUntil
+    const key = firing ? `${sheet}-fire` : this.moving ? `${sheet}-walk` : `${sheet}-idle`
+    if (this.player.texture.key !== sheet) {
+      this.player.setTexture(sheet, 0)
+      applyCharBody(this.player, 12)
+    }
+    if (!force && this.player.anims.currentAnim?.key === key) return
+    this.player.play(key, firing && !force)
+  }
+
+  private syncEnemyAnim(enemy: Sprite, speed: number, moving: boolean): void {
+    const tex = enemy.texture.key
+    const key = moving ? `${tex}-walk` : `${tex}-idle`
+    if (enemy.anims.currentAnim?.key === key) return
+    if (this.anims.exists(key)) enemy.play(key)
+    enemy.anims.timeScale = Phaser.Math.Clamp(speed / 90, 0.55, 1.8)
+  }
+
+  private playWeaponFire(id: WeaponId): void {
+    const fx = shotFxFor(id)
+    const sheet = soldierSheetKey(fx.pose)
+    this.fireUntil = this.now + Math.max(fx.flashMs + 50, 170)
+    if (this.player.texture.key !== sheet) {
+      this.player.setTexture(sheet, 0)
+      applyCharBody(this.player, 12)
+    }
+    this.player.play(`${sheet}-fire`)
+    const angle = this.player.rotation
+    const muzzle = worldFromLocal(this.player.x, this.player.y, angle, fx.muzzle.x, fx.muzzle.y)
+    this.spawnFlash(muzzle.x, muzzle.y, angle, fx.flashKey, fx.flashOrigin, fx.flashScale, fx.flashMs)
+    if (fx.backblast) {
+      const rear = worldFromLocal(this.player.x, this.player.y, angle, -16, 8)
+      this.spawnFlash(rear.x, rear.y, angle, 'muzzle-backblast', { x: 1, y: 0.5 }, 1.1, 170)
+    }
+    if (fx.casings) this.ejectCasing(angle)
+    this.spawnSparks(muzzle.x, muzzle.y, angle, fx.sparks)
+    switch (id) {
+      case 'shotgun':
+        this.spawnFlash(muzzle.x, muzzle.y, angle - 0.26, fx.flashKey, fx.flashOrigin, 0.85, fx.flashMs)
+        this.spawnFlash(muzzle.x, muzzle.y, angle + 0.26, fx.flashKey, fx.flashOrigin, 0.85, fx.flashMs)
+        break
+      case 'smg':
+        this.spawnFlash(
+          muzzle.x,
+          muzzle.y,
+          angle + (Math.random() - 0.5) * 0.16,
+          fx.flashKey,
+          fx.flashOrigin,
+          0.7,
+          40,
+        )
+        break
+      case 'pistol':
+      case 'barrel':
+      case 'grenade':
+      case 'barricade':
+      case 'mine':
+      case 'rocket':
+      case 'charge':
+      case 'railgun':
+        break
+      default: {
+        const _never: never = id
+        void _never
+      }
+    }
+  }
+
+  private spawnFlash(
+    x: number,
+    y: number,
+    angle: number,
+    key: string,
+    origin: { x: number; y: number },
+    scale: number,
+    ms: number,
+  ): void {
+    const img = this.add.image(x, y, key).setDepth(16).setRotation(angle).setScale(scale)
+    img.setOrigin(origin.x, origin.y)
+    this.tweens.add({
+      targets: img,
+      alpha: 0,
+      scale: scale * 1.4,
+      duration: ms,
+      onComplete: () => img.destroy(),
+    })
+  }
+
+  private spawnSparks(x: number, y: number, angle: number, count: number): void {
+    for (let i = 0; i < count; i += 1) {
+      const jitter = (Math.random() - 0.5) * 0.7
+      const dist = 10 + Math.random() * 22
+      const spark = this.add.image(x, y, 'spark').setDepth(15).setScale(0.6 + Math.random() * 0.6)
+      spark.setRotation(angle + jitter)
+      this.tweens.add({
+        targets: spark,
+        x: x + Math.cos(angle + jitter) * dist,
+        y: y + Math.sin(angle + jitter) * dist,
+        alpha: 0,
+        scale: 0.2,
+        duration: 80 + Math.random() * 90,
+        onComplete: () => spark.destroy(),
+      })
+    }
+  }
+
+  private ejectCasing(angle: number): void {
+    const origin = worldFromLocal(this.player.x, this.player.y, angle, 2, 12)
+    const casing = this.add.image(origin.x, origin.y, 'casing').setDepth(11)
+    const kick = angle + Math.PI / 2 + (Math.random() - 0.5) * 0.4
+    this.tweens.add({
+      targets: casing,
+      x: origin.x + Math.cos(kick) * (18 + Math.random() * 14),
+      y: origin.y + Math.sin(kick) * (18 + Math.random() * 14),
+      angle: 180 + Math.random() * 220,
+      alpha: 0.2,
+      duration: 280,
+      onComplete: () => casing.destroy(),
+    })
   }
 
   private togglePause(): void {
