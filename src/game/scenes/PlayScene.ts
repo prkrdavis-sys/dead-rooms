@@ -108,6 +108,8 @@ export class PlayScene extends Phaser.Scene {
   private railA = { x: 0, y: 0 }
   private railB = { x: 0, y: 0 }
   private mobileCap = false
+  /** Physics objects queued for destroy after the current update/overlap step. */
+  private graveyard: Phaser.GameObjects.GameObject[] = []
 
   constructor() {
     super('play')
@@ -183,11 +185,13 @@ export class PlayScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       for (const off of this.offs) off()
       this.offs = []
+      this.flushGraveyard()
     })
   }
 
   update(_time: number, delta: number): void {
     this.now = this.time.now
+    this.flushGraveyard()
     if (this.paused) return
 
     this.gfx.clear()
@@ -214,6 +218,7 @@ export class PlayScene extends Phaser.Scene {
       this.hudAcc = 0
       this.emitHud()
     }
+    this.flushGraveyard()
   }
 
   private bindInput(): void {
@@ -248,7 +253,7 @@ export class PlayScene extends Phaser.Scene {
     this.physics.add.overlap(this.bullets, this.barrels, (b, barrel) => {
       this.disableBullet(b as Sprite)
       this.explodeAt((barrel as Sprite).x, (barrel as Sprite).y, 92, 70)
-      barrel.destroy()
+      this.retire(barrel as Sprite)
     })
     this.physics.add.overlap(this.enemyShots, this.player, (shot) => {
       this.disableBullet(shot as Sprite)
@@ -257,7 +262,7 @@ export class PlayScene extends Phaser.Scene {
     this.physics.add.overlap(this.enemyShots, this.barrels, (shot, barrel) => {
       this.disableBullet(shot as Sprite)
       this.explodeAt((barrel as Sprite).x, (barrel as Sprite).y, 92, 70)
-      barrel.destroy()
+      this.retire(barrel as Sprite)
     })
     this.physics.add.overlap(this.enemies, this.player, (e) => {
       this.melee(e as Sprite)
@@ -269,7 +274,7 @@ export class PlayScene extends Phaser.Scene {
       const m = mine as Sprite
       if (m.getData('armed')) {
         this.explodeAt(m.x, m.y, 80, 60)
-        m.destroy()
+        this.retire(m)
         void enemy
       }
     })
@@ -277,7 +282,7 @@ export class PlayScene extends Phaser.Scene {
       const m = mine as Sprite
       if (m.getData('armed')) {
         this.explodeAt(m.x, m.y, 80, 60)
-        m.destroy()
+        this.retire(m)
       }
     })
   }
@@ -553,7 +558,7 @@ export class PlayScene extends Phaser.Scene {
     }
     for (const charge of list) {
       this.explodeAt(charge.x, charge.y, 110, 90)
-      charge.destroy()
+      this.retire(charge)
     }
   }
 
@@ -598,14 +603,11 @@ export class PlayScene extends Phaser.Scene {
       if (this.blockedAt(x, y)) break
       endX = x
       endY = y
-      this.enemies.children.iterate((child) => {
-        const enemy = child as Sprite
-        if (!enemy.active) return true
+      this.forEachEnemy((enemy) => {
         if (Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y) < 20 && !hit.has(enemy)) {
           hit.add(enemy)
           this.damageEnemy(enemy, def.damage)
         }
-        return true
       })
     }
     this.railB = { x: endX, y: endY }
@@ -638,6 +640,35 @@ export class PlayScene extends Phaser.Scene {
     bullet.disableBody(true, true)
   }
 
+  private forEachEnemy(fn: (enemy: Sprite) => void): void {
+    const list = this.enemies.getChildren().slice() as Sprite[]
+    for (const enemy of list) {
+      if (!enemy?.active) continue
+      fn(enemy)
+    }
+  }
+
+  private retire(obj: Phaser.GameObjects.GameObject): void {
+    if (!obj || this.graveyard.includes(obj)) return
+    const sprite = obj as Sprite
+    if (typeof sprite.disableBody === 'function' && sprite.body) {
+      sprite.disableBody(true, true)
+    } else {
+      obj.setActive(false)
+      sprite.setVisible(false)
+    }
+    this.graveyard.push(obj)
+  }
+
+  private flushGraveyard(): void {
+    if (this.graveyard.length === 0) return
+    const batch = this.graveyard
+    this.graveyard = []
+    for (const obj of batch) {
+      if (obj.scene) obj.destroy()
+    }
+  }
+
   private updateProjectiles(): void {
     const killIfGone = (sprite: Sprite) => {
       if (!sprite.active) return
@@ -660,10 +691,12 @@ export class PlayScene extends Phaser.Scene {
       }
     }
     this.bullets.children.iterate((child) => {
+      if (!child) return true
       killIfGone(child as Sprite)
       return true
     })
     this.enemyShots.children.iterate((child) => {
+      if (!child) return true
       killIfGone(child as Sprite)
       return true
     })
@@ -680,17 +713,14 @@ export class PlayScene extends Phaser.Scene {
     })
     this.cameras.main.shake(120, 0.006)
     this.playSfx(Math.random() > 0.5 ? 'boom1' : 'boom2', 0.45)
-    this.enemies.children.iterate((child) => {
-      const enemy = child as Sprite
-      if (!enemy.active) return true
+    this.forEachEnemy((enemy) => {
       const dist = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y)
-      if (dist <= radius) {
-        const falloff = 1 - dist / radius
-        this.damageEnemy(enemy, Math.round(damage * (0.55 + 0.45 * falloff)))
-        const a = Math.atan2(enemy.y - y, enemy.x - x)
-        enemy.setVelocity(Math.cos(a) * 220, Math.sin(a) * 220)
-      }
-      return true
+      if (dist > radius) return
+      const falloff = 1 - dist / radius
+      this.damageEnemy(enemy, Math.round(damage * (0.55 + 0.45 * falloff)))
+      if (!enemy.active || !enemy.body) return
+      const a = Math.atan2(enemy.y - y, enemy.x - x)
+      enemy.setVelocity(Math.cos(a) * 220, Math.sin(a) * 220)
     })
     if (!skipPlayer) {
       const dist = Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y)
@@ -748,16 +778,13 @@ export class PlayScene extends Phaser.Scene {
     const def = ENEMY_BY_ID[brain.id]
     this.kills += 1
     this.score += def.score + this.wave * 8
-    this.splatter(enemy.x, enemy.y)
-    if (def.attack === 'explode') {
-      const x = enemy.x
-      const y = enemy.y
-      enemy.destroy()
-      this.explodeAt(x, y, def.explodeRadius ?? 80, 36)
-    } else {
-      enemy.destroy()
-    }
-    this.maybeDrop(enemy.x, enemy.y)
+    const x = enemy.x
+    const y = enemy.y
+    this.splatter(x, y)
+    const blast = def.attack === 'explode' ? { x, y, radius: def.explodeRadius ?? 80 } : null
+    this.retire(enemy)
+    this.maybeDrop(x, y)
+    if (blast) this.explodeAt(blast.x, blast.y, blast.radius, 36)
   }
 
   private maybeDrop(x: number, y: number): void {
@@ -771,7 +798,7 @@ export class PlayScene extends Phaser.Scene {
     item.setDepth(8)
     item.setData('kind', kind)
     this.time.delayedCall(9000, () => {
-      if (item.active) item.destroy()
+      if (item.active) this.retire(item)
     })
   }
 
@@ -786,7 +813,7 @@ export class PlayScene extends Phaser.Scene {
       }
     }
     this.playSfx('pickup', 0.45)
-    item.destroy()
+    this.retire(item)
   }
 
   private splatter(x: number, y: number): void {
@@ -825,11 +852,9 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private updateEnemies(): void {
-    this.enemies.children.iterate((child) => {
-      const enemy = child as Sprite
-      if (!enemy.active) return true
+    this.forEachEnemy((enemy) => {
       const brain = enemy.getData('brain') as EnemyBrain | undefined
-      if (!brain) return true
+      if (!brain) return
       const def = ENEMY_BY_ID[brain.id]
       const dx = this.player.x - enemy.x
       const dy = this.player.y - enemy.y
@@ -849,11 +874,11 @@ export class PlayScene extends Phaser.Scene {
             brain.nextSpecial = this.now + (def.cooldownMs ?? 2200)
             this.spawnEnemyShot(enemy.x, enemy.y, brain.dirX, brain.dirY)
           }
-          return true
+          return
         }
         if (brain.phase === 'recover' && this.now < brain.nextSpecial) {
           enemy.setVelocity(nx * def.speed * 0.35, ny * def.speed * 0.35)
-          return true
+          return
         }
         if (dist < 260 && this.now >= brain.nextSpecial) {
           brain.phase = 'telegraph'
@@ -861,7 +886,7 @@ export class PlayScene extends Phaser.Scene {
           brain.dirX = nx
           brain.dirY = ny
           enemy.setVelocity(0, 0)
-          return true
+          return
         }
       }
 
@@ -879,7 +904,6 @@ export class PlayScene extends Phaser.Scene {
       }
 
       enemy.setVelocity(nx * def.speed, ny * def.speed)
-      return true
     })
   }
 
