@@ -36,7 +36,7 @@ function ChoiceCard({
       <div className="flex items-start justify-between gap-2">
         <div className="text-sm font-bold uppercase tracking-wider">{title}</div>
         {selected ? (
-          <span className="shrink-0 text-[10px] uppercase tracking-[0.16em] text-[#e11d48]">Selected</span>
+          <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.16em] text-[#f3e6d0]">Selected</span>
         ) : null}
       </div>
       {children}
