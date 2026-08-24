@@ -86,7 +86,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="h-full">
       {screen === 'menu' && (
         <MainMenu
           profiles={profiles}
@@ -135,6 +135,6 @@ export default function App() {
         <ProfileModal state={profiles} onChange={setProfiles} onClose={() => setModal(null)} />
       )}
       {modal === 'stats' && <StatsModal state={profiles} onClose={() => setModal(null)} />}
-    </>
+    </div>
   )
 }

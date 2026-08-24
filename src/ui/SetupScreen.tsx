@@ -48,7 +48,7 @@ function ChoiceCard({
 
 export function SetupScreen({ value, onChange, onStart, onBack }: SetupScreenProps) {
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-5xl flex-col gap-5 px-4 py-6">
+    <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-5 overflow-y-auto overscroll-contain touch-pan-y px-4 py-6">
       <header className="flex items-center justify-between gap-3">
         <button type="button" className="btn btn-ghost" onClick={onBack}>
           Back

@@ -15,5 +15,5 @@ export function GameCanvas({ run }: { run: RunConfig }) {
     }
   }, [run])
 
-  return <div ref={host} className="h-full w-full bg-black" />
+  return <div ref={host} className="h-full w-full touch-none bg-black" />
 }

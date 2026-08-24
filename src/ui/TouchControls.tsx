@@ -29,14 +29,16 @@ export function TouchControls({ visible }: TouchControlsProps) {
     <div className="pointer-events-none absolute inset-0 z-20">
       <div
         ref={pad}
-        className="pointer-events-auto absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] h-[132px] w-[132px] rounded-full border border-white/20 bg-black/25"
+        className="pointer-events-auto absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] h-[132px] w-[132px] touch-none rounded-full border border-white/20 bg-black/25"
         onPointerDown={(event) => {
+          event.preventDefault()
           event.currentTarget.setPointerCapture(event.pointerId)
           const start = { x: event.clientX, y: event.clientY }
           setOrigin(start)
           stick(event.clientX, event.clientY, start)
         }}
         onPointerMove={(event) => {
+          event.preventDefault()
           if (!origin) return
           stick(event.clientX, event.clientY, origin)
         }}
@@ -50,6 +52,11 @@ export function TouchControls({ visible }: TouchControlsProps) {
           setKnob({ x: 0, y: 0 })
           bus.emit('move', { x: 0, y: 0 })
         }}
+        onLostPointerCapture={() => {
+          setOrigin(null)
+          setKnob({ x: 0, y: 0 })
+          bus.emit('move', { x: 0, y: 0 })
+        }}
       >
         <div
           className="absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/25"
@@ -58,7 +65,7 @@ export function TouchControls({ visible }: TouchControlsProps) {
       </div>
       <div className="pointer-events-auto absolute right-[max(0.75rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] flex flex-col items-center gap-3">
         <button
-          className="touch-btn h-16 w-16"
+          className="touch-btn h-16 w-16 touch-none"
           onPointerDown={(event) => {
             event.preventDefault()
             bus.emit('special', true)
@@ -69,7 +76,7 @@ export function TouchControls({ visible }: TouchControlsProps) {
           Special
         </button>
         <button
-          className={`touch-btn ${firing ? 'active' : ''}`}
+          className={`touch-btn touch-none ${firing ? 'active' : ''}`}
           onPointerDown={(event) => {
             event.preventDefault()
             setFiring(true)
