@@ -20,9 +20,40 @@ export type Profile = {
 }
 
 export type Settings = {
+  musicOn: boolean
+  sfxOn: boolean
   music: number
   sfx: number
   gore: number
+}
+
+export const VOLUME_LEVELS = [
+  { id: 'quiet', label: 'Quiet', value: 0.25 },
+  { id: 'medium', label: 'Medium', value: 0.5 },
+  { id: 'loud', label: 'Loud', value: 0.85 },
+] as const
+
+export const GORE_LEVELS = [
+  { id: 'off', label: 'Off', value: 0 },
+  { id: 'light', label: 'Light', value: 25 },
+  { id: 'normal', label: 'Normal', value: 50 },
+  { id: 'heavy', label: 'Heavy', value: 75 },
+  { id: 'max', label: 'Max', value: 100 },
+] as const
+
+const VOLUME_STEPS = VOLUME_LEVELS.map((level) => level.value)
+const GORE_STEPS = GORE_LEVELS.map((level) => level.value)
+
+function nearestStep(value: number, steps: number[]): number {
+  return steps.reduce((best, step) => (Math.abs(step - value) < Math.abs(best - value) ? step : best), steps[0])
+}
+
+export function effectiveMusic(settings: Settings): number {
+  return settings.musicOn ? settings.music : 0
+}
+
+export function effectiveSfx(settings: Settings): number {
+  return settings.sfxOn ? settings.sfx : 0
 }
 
 export type ProfileState = {
@@ -42,9 +73,11 @@ const defaultStats = (): ProfileStats => ({
 })
 
 const defaultSettings = (): Settings => ({
-  music: 0.45,
-  sfx: 0.7,
-  gore: 55,
+  musicOn: true,
+  sfxOn: true,
+  music: 0.5,
+  sfx: 0.85,
+  gore: 50,
 })
 
 function uid(): string {
@@ -63,7 +96,16 @@ function readJson<T>(key: string): T | null {
 
 export function loadSettings(): Settings {
   const stored = readJson<Partial<Settings>>(SETTINGS_KEY)
-  return { ...defaultSettings(), ...stored }
+  const defaults = defaultSettings()
+  const musicValue = stored?.music ?? defaults.music
+  const sfxValue = stored?.sfx ?? defaults.sfx
+  return {
+    musicOn: stored?.musicOn ?? musicValue > 0,
+    sfxOn: stored?.sfxOn ?? sfxValue > 0,
+    music: nearestStep(musicValue, VOLUME_STEPS),
+    sfx: nearestStep(sfxValue, VOLUME_STEPS),
+    gore: nearestStep(stored?.gore ?? defaults.gore, GORE_STEPS),
+  }
 }
 
 export function saveSettings(settings: Settings): void {

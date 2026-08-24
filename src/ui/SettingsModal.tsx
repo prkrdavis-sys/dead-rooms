@@ -1,10 +1,54 @@
-import { saveSettings, type Settings } from '../lib/storage'
+import {
+  GORE_LEVELS,
+  VOLUME_LEVELS,
+  saveSettings,
+  type Settings,
+} from '../lib/storage'
 import { Modal } from './Modal'
 
 type SettingsModalProps = {
   settings: Settings
   onChange: (next: Settings) => void
   onClose: () => void
+}
+
+type ChoiceOption<T> = {
+  value: T
+  label: string
+}
+
+function ChoiceRow<T>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: T
+  options: readonly ChoiceOption<T>[]
+  onChange: (value: T) => void
+}) {
+  return (
+    <div>
+      <div className="mb-2 text-xs uppercase tracking-[0.16em] text-[#b8a38d]">{label}</div>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
+        {options.map((option) => {
+          const selected = option.value === value
+          return (
+            <button
+              key={String(option.value)}
+              type="button"
+              className={`btn px-3 py-2 ${selected ? 'btn-primary' : 'btn-ghost'}`}
+              aria-pressed={selected}
+              onClick={() => onChange(option.value)}
+            >
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export function SettingsModal({ settings, onChange, onClose }: SettingsModalProps) {
@@ -17,51 +61,51 @@ export function SettingsModal({ settings, onChange, onClose }: SettingsModalProp
   return (
     <Modal title="Settings" onClose={onClose}>
       <section className="grid gap-5">
-        <label className="block">
-          <div className="mb-1 flex justify-between text-xs uppercase tracking-[0.16em] text-[#b8a38d]">
-            <span>Music</span>
-            <span>{Math.round(settings.music * 100)}</span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
+        <div className="grid gap-3">
+          <ChoiceRow
+            label="Music"
+            value={settings.musicOn}
+            options={[
+              { value: true, label: 'On' },
+              { value: false, label: 'Off' },
+            ]}
+            onChange={(musicOn) => patch({ musicOn })}
+          />
+          <ChoiceRow
+            label="Music volume"
             value={settings.music}
-            onChange={(event) => patch({ music: Number(event.target.value) })}
+            options={VOLUME_LEVELS.map((level) => ({ value: level.value, label: level.label }))}
+            onChange={(music) => patch({ music, musicOn: true })}
           />
-        </label>
-        <label className="block">
-          <div className="mb-1 flex justify-between text-xs uppercase tracking-[0.16em] text-[#b8a38d]">
-            <span>Sound</span>
-            <span>{Math.round(settings.sfx * 100)}</span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
+        </div>
+        <div className="grid gap-3">
+          <ChoiceRow
+            label="Sound"
+            value={settings.sfxOn}
+            options={[
+              { value: true, label: 'On' },
+              { value: false, label: 'Off' },
+            ]}
+            onChange={(sfxOn) => patch({ sfxOn })}
+          />
+          <ChoiceRow
+            label="Sound volume"
             value={settings.sfx}
-            onChange={(event) => patch({ sfx: Number(event.target.value) })}
+            options={VOLUME_LEVELS.map((level) => ({ value: level.value, label: level.label }))}
+            onChange={(sfx) => patch({ sfx, sfxOn: true })}
           />
-        </label>
-        <label className="block">
-          <div className="mb-1 flex justify-between text-xs uppercase tracking-[0.16em] text-[#b8a38d]">
-            <span>Gore</span>
-            <span>{settings.gore}</span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
+        </div>
+        <div>
+          <ChoiceRow
+            label="Gore"
             value={settings.gore}
-            onChange={(event) => patch({ gore: Number(event.target.value) })}
+            options={GORE_LEVELS.map((level) => ({ value: level.value, label: level.label }))}
+            onChange={(gore) => patch({ gore })}
           />
-          <p className="mt-2 text-sm leading-relaxed text-[#d6c7b0]">
+          <p className="mt-2 mb-0 text-sm leading-relaxed text-[#d6c7b0]">
             How much blood hits the floor, and how many body chunks stay behind. Phones cap the mess so the frame rate stays up.
           </p>
-        </label>
+        </div>
         <div className="rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3 text-sm leading-relaxed text-[#d6c7b0]">
           <h3 className="mt-0 mb-2 text-xs uppercase tracking-[0.16em] text-[#d4a017]">Controls</h3>
           <ul className="m-0 grid list-none gap-1 p-0">

@@ -3,6 +3,8 @@ import type { RunConfig } from './game/types'
 import { music } from './lib/music'
 import {
   activeProfile,
+  effectiveMusic,
+  effectiveSfx,
   loadProfiles,
   loadSettings,
   recordRun,
@@ -36,14 +38,14 @@ export default function App() {
   const [runKey, setRunKey] = useState(0)
 
   useEffect(() => {
-    music.setVolume(settings.music)
+    music.setVolume(effectiveMusic(settings))
     if (screen === 'play') void music.playCombat()
     else void music.playMenu()
-  }, [screen, settings.music])
+  }, [screen, settings])
 
   useEffect(() => {
     bus.emit('gore', settings.gore)
-    bus.emit('volumes', { music: settings.music, sfx: settings.sfx })
+    bus.emit('volumes', { music: effectiveMusic(settings), sfx: effectiveSfx(settings) })
   }, [settings])
 
   useEffect(() => {
@@ -71,8 +73,8 @@ export default function App() {
       specialId: setup.specialId,
       difficulty: setup.difficulty,
       gore: settings.gore,
-      music: settings.music,
-      sfx: settings.sfx,
+      music: effectiveMusic(settings),
+      sfx: effectiveSfx(settings),
       profileName: activeProfile(profiles).name,
     }
     setRun(next)
@@ -122,7 +124,7 @@ export default function App() {
           settings={settings}
           onChange={(next) => {
             setSettings(next)
-            music.setVolume(next.music)
+            music.setVolume(effectiveMusic(next))
           }}
           onClose={() => setModal(null)}
         />
