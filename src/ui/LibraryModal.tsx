@@ -18,11 +18,12 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="Containment Library" onClose={onClose} wide>
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 grid grid-cols-3 gap-2">
         {tabs.map((item) => (
           <button
             key={item.id}
-            className={`btn ${tab === item.id ? 'btn-primary' : 'btn-ghost'}`}
+            type="button"
+            className={`btn px-2 py-2 text-sm ${tab === item.id ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setTab(item.id)}
           >
             {item.label}
