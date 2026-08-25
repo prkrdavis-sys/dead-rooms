@@ -3,6 +3,7 @@ import { MAPS, type MapId } from '../data/maps'
 import { SPECIALS, type SpecialId } from '../data/specials'
 import { DIFFICULTY_LEVELS } from '../lib/storage'
 import { ChoiceRow } from './ChoiceRow'
+import { ScreenShell } from './ScreenShell'
 
 export type SetupValue = {
   mapId: MapId
@@ -48,13 +49,12 @@ function ChoiceCard({
 
 export function SetupScreen({ value, onChange, onStart, onBack }: SetupScreenProps) {
   return (
-    <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-5 overflow-y-auto overscroll-contain touch-pan-y px-4 py-6">
-      <header className="flex items-center justify-between gap-3">
-        <button type="button" className="btn btn-ghost" onClick={onBack}>
+    <ScreenShell className="mx-auto flex w-full max-w-5xl flex-col gap-5">
+      <header className="flex items-center gap-3">
+        <button type="button" className="btn btn-ghost shrink-0" onClick={onBack}>
           Back
         </button>
-        <h1 className="m-0 text-xl tracking-[0.18em] uppercase sm:text-3xl">Choose the room</h1>
-        <span className="w-16" />
+        <h1 className="m-0 min-w-0 flex-1 text-lg tracking-[0.18em] uppercase sm:text-3xl">Choose the room</h1>
       </header>
       <section>
         <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-[#d4a017]">Map</h2>
@@ -98,9 +98,11 @@ export function SetupScreen({ value, onChange, onStart, onBack }: SetupScreenPro
           Warm-up is a handful. Meat grinder floods the room. Enemy counts scale; the tells stay honest.
         </p>
       </section>
-      <button type="button" className="btn btn-primary py-4 text-lg tracking-[0.18em]" onClick={onStart}>
-        Enter the room
-      </button>
-    </div>
+      <div className="setup-start">
+        <button type="button" className="btn btn-primary w-full py-4 text-lg tracking-[0.18em]" onClick={onStart}>
+          Enter the room
+        </button>
+      </div>
+    </ScreenShell>
   )
 }

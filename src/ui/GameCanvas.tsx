@@ -9,11 +9,16 @@ export function GameCanvas({ run }: { run: RunConfig }) {
     const el = host.current
     if (!el) return
     const game = createDeadRoomsGame(el, run)
+    const observer = new ResizeObserver(() => {
+      game.scale.refresh()
+    })
+    observer.observe(el)
     return () => {
+      observer.disconnect()
       game.destroy(true)
       el.innerHTML = ''
     }
   }, [run])
 
-  return <div ref={host} className="h-full w-full touch-none bg-black" />
+  return <div ref={host} className="absolute inset-0 h-full w-full touch-none bg-black" />
 }

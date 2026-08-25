@@ -14,8 +14,12 @@ function formatTime(total: number): string {
 
 export function DeathScreen({ over, onAgain, onExit }: DeathScreenProps) {
   return (
-    <div className="death-screen absolute inset-0 z-30 grid place-items-center p-4" role="dialog" aria-labelledby="death-title">
-      <div className="panel death-card w-full max-w-md p-6 text-center">
+    <div
+      className="death-screen absolute inset-0 z-30 grid place-items-center p-[var(--app-pad-top)_var(--app-pad-right)_var(--app-pad-bottom)_var(--app-pad-left)]"
+      role="dialog"
+      aria-labelledby="death-title"
+    >
+      <div className="panel death-card w-full max-w-md p-5 text-center sm:p-6">
         <p className="m-0 text-[11px] uppercase tracking-[0.32em] text-[#d4a017]">Run over</p>
         <h2 id="death-title" className="death-title mt-2 mb-1">
           You died

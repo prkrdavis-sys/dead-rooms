@@ -94,7 +94,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-full">
+    <div className="h-full min-w-0">
       {screen === 'menu' && (
         <MainMenu
           onPlay={() => {

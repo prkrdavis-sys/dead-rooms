@@ -31,10 +31,16 @@ export function ProfileModal({ state, onChange, onClose }: ProfileModalProps) {
       </p>
       <label className="mb-4 block">
         <div className="mb-1 text-xs uppercase tracking-[0.16em] text-[#b8a38d]">Active name</div>
-        <div className="flex gap-2">
-          <input value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={18} />
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            className="min-w-0 flex-1"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            maxLength={18}
+          />
           <button
-            className="btn"
+            type="button"
+            className="btn shrink-0"
             onClick={() => persist(renameProfile(state, current.id, draft))}
           >
             Save
@@ -56,15 +62,17 @@ export function ProfileModal({ state, onChange, onClose }: ProfileModalProps) {
           </button>
         ))}
       </div>
-      <div className="mt-5 flex gap-2">
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
         <input
+          className="min-w-0 flex-1"
           placeholder="New survivor name"
           value={fresh}
           maxLength={18}
           onChange={(event) => setFresh(event.target.value)}
         />
         <button
-          className="btn btn-primary"
+          type="button"
+          className="btn btn-primary shrink-0"
           onClick={() => {
             const next = addProfile(state, fresh)
             setFresh('')

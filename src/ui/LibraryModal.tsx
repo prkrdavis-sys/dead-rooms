@@ -18,11 +18,12 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="Containment Library" onClose={onClose} wide>
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 grid grid-cols-3 gap-2">
         {tabs.map((item) => (
           <button
             key={item.id}
-            className={`btn ${tab === item.id ? 'btn-primary' : 'btn-ghost'}`}
+            type="button"
+            className={`btn px-2 py-2 text-sm ${tab === item.id ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setTab(item.id)}
           >
             {item.label}
@@ -34,7 +35,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {ENEMIES.map((enemy) => (
             <article
               key={enemy.id}
-              className="flex gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
             >
               <EnemyThumb enemy={enemy} />
               <div className="min-w-0 flex-1">
@@ -68,7 +69,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {WEAPONS.map((weapon) => (
             <article
               key={weapon.id}
-              className="flex gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
             >
               <WeaponThumb id={weapon.id} name={weapon.name} />
               <div className="min-w-0 flex-1">
@@ -88,7 +89,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {SPECIALS.map((special) => (
             <article
               key={special.id}
-              className="flex gap-3 rounded-lg border border-[#5b2e24] bg-[#201010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#5b2e24] bg-[#201010] p-3"
             >
               <SpecialThumb id={special.id} name={special.name} />
               <div className="min-w-0 flex-1">
@@ -105,7 +106,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {MAPS.map((room) => (
             <article
               key={room.id}
-              className="flex gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
             >
               <MapThumb room={room} />
               <div className="min-w-0 flex-1">
