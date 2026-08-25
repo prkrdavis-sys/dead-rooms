@@ -34,7 +34,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {ENEMIES.map((enemy) => (
             <article
               key={enemy.id}
-              className="flex gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
             >
               <EnemyThumb enemy={enemy} />
               <div className="min-w-0 flex-1">
@@ -68,7 +68,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {WEAPONS.map((weapon) => (
             <article
               key={weapon.id}
-              className="flex gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
             >
               <WeaponThumb id={weapon.id} name={weapon.name} />
               <div className="min-w-0 flex-1">
@@ -88,7 +88,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {SPECIALS.map((special) => (
             <article
               key={special.id}
-              className="flex gap-3 rounded-lg border border-[#5b2e24] bg-[#201010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#5b2e24] bg-[#201010] p-3"
             >
               <SpecialThumb id={special.id} name={special.name} />
               <div className="min-w-0 flex-1">
@@ -105,7 +105,7 @@ export function LibraryModal({ onClose }: { onClose: () => void }) {
           {MAPS.map((room) => (
             <article
               key={room.id}
-              className="flex gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
+              className="flex min-w-0 gap-3 rounded-lg border border-[#3f2a22] bg-[#1a1010] p-3"
             >
               <MapThumb room={room} />
               <div className="min-w-0 flex-1">

@@ -14,6 +14,7 @@ import { bus, type HudState } from '../../lib/bus'
 import { applyCharBody } from '../createAnims'
 import { soldierSheetKey } from '../characterAssets'
 import { PLAYER_MAX_HP, type RunConfig } from '../types'
+import { zoomForView } from '../viewZoom'
 import { poseForWeapon, shotFxFor, worldFromLocal } from '../weaponView'
 
 type EnemyBrain = {
@@ -150,7 +151,8 @@ export class PlayScene extends Phaser.Scene {
     this.player.play('soldier-gun-idle')
 
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
-    this.cameras.main.setZoom(this.mobileCap ? 0.82 : 1)
+    this.syncCameraToView()
+    this.scale.on('resize', this.syncCameraToView, this)
 
     this.bindInput()
     this.bindPhysics()
@@ -190,6 +192,7 @@ export class PlayScene extends Phaser.Scene {
     )
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off('resize', this.syncCameraToView, this)
       for (const off of this.offs) off()
       this.offs = []
       this.flushGraveyard()
@@ -199,6 +202,14 @@ export class PlayScene extends Phaser.Scene {
         if (w.__hurtPlayer) w.__hurtPlayer = undefined
       }
     })
+  }
+
+  private syncCameraToView(): void {
+    const width = this.scale.width
+    const height = this.scale.height
+    this.cameras.main.setZoom(zoomForView(width, height))
+    const touch = this.sys.game.device.input.touch || width < 900
+    this.cameras.main.setFollowOffset(0, touch ? Math.min(64, Math.round(height * 0.07)) : 0)
   }
 
   update(_time: number, delta: number): void {

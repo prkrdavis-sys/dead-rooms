@@ -22,7 +22,7 @@ function ThumbFrame({
 }) {
   return (
     <div
-      className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-md border border-[#5b2e24] bg-[#241810] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.4)]"
+      className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-[#5b2e24] bg-[#241810] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.4)] sm:h-[88px] sm:w-[88px]"
       aria-hidden="true"
       title={label}
     >

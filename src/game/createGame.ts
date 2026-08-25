@@ -19,6 +19,7 @@ export function createDeadRoomsGame(parent: HTMLElement, run: RunConfig): Phaser
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
+      expandParent: false,
     },
     scene: [BootScene, PlayScene],
     audio: { disableWebAudio: false },

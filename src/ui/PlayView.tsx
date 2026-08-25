@@ -51,7 +51,7 @@ export function PlayView({ run, onExit, onAgain, onOpenSettings }: PlayViewProps
   const locked = Boolean(over || dying || hud?.dead)
 
   return (
-    <div data-play-locked className="relative h-full w-full overflow-hidden overscroll-none bg-black">
+    <div data-play-locked className="play-root relative h-full w-full overflow-hidden overscroll-none bg-black">
       <GameCanvas run={run} />
       <HUD hud={over ? null : hud} touch={showTouch} onPause={() => bus.emit('pauseToggle', true)} />
       <TouchControls visible={showTouch && !locked} />
@@ -63,7 +63,7 @@ export function PlayView({ run, onExit, onAgain, onOpenSettings }: PlayViewProps
         </div>
       )}
       {paused && !locked && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-black/70 p-4">
+        <div className="absolute inset-0 z-40 grid place-items-center bg-black/70 p-[var(--app-pad-top)_var(--app-pad-right)_var(--app-pad-bottom)_var(--app-pad-left)]">
           <div className="panel w-full max-w-sm p-5 text-center">
             <h2 className="mt-0 mb-4 tracking-[0.16em] uppercase">Paused</h2>
             <div className="grid gap-2">
