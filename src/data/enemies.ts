@@ -51,7 +51,7 @@ export const ENEMIES: EnemyDef[] = [
     name: 'Runner',
     role: 'Fast melee',
     hp: 28,
-    speed: 145,
+    speed: 128,
     damage: 10,
     radius: 12,
     scale: 0.92,
