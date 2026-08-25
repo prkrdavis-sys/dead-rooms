@@ -207,9 +207,13 @@ export class PlayScene extends Phaser.Scene {
   private syncCameraToView(): void {
     const width = this.scale.width
     const height = this.scale.height
-    this.cameras.main.setZoom(zoomForView(width, height))
+    const roomW = this.cols * TILE
+    const roomH = this.rows * TILE
+    const zoom = zoomForView(width, height, roomW, roomH)
+    this.cameras.main.setZoom(zoom)
     const touch = this.sys.game.device.input.touch || width < 900
-    this.cameras.main.setFollowOffset(0, touch ? Math.min(64, Math.round(height * 0.07)) : 0)
+    const hudBias = height < 520 ? height * 0.14 : height * 0.08
+    this.cameras.main.setFollowOffset(0, touch ? hudBias / zoom : 0)
   }
 
   update(_time: number, delta: number): void {

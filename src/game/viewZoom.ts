@@ -1,11 +1,27 @@
-const TARGET_SHORT_AXIS = 520
 const MIN_ZOOM = 0.58
-const MAX_ZOOM = 1
-const FULL_ZOOM_AT = 700
+const MAX_ZOOM = 1.35
+const ROOM_PAD = 80
+const COMBAT_SHORT_AXIS = 500
+const MIN_COMBAT_VIEW = 360
 
-/** Keep a readable slice of the room visible on phones, tablets, and resized windows. */
-export function zoomForView(width: number, height: number): number {
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+/** Keep the room readable: fill large windows, stay close-in on tall phones. */
+export function zoomForView(width: number, height: number, roomW = 960, roomH = 528): number {
+  const paddedW = roomW + ROOM_PAD
+  const paddedH = roomH + ROOM_PAD
+  const zoomToFit = Math.min(width / paddedW, height / paddedH)
+  const zoomToCover = Math.max(width / paddedW, height / paddedH)
   const shortSide = Math.min(width, height)
-  if (shortSide >= FULL_ZOOM_AT) return MAX_ZOOM
-  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, shortSide / TARGET_SHORT_AXIS))
+  const combatZoom = shortSide / COMBAT_SHORT_AXIS
+  const tall = width / height < 0.85
+
+  if (!tall && zoomToFit >= 0.7 && width >= roomW * 0.7 && height >= roomH * 0.7) {
+    return clamp(zoomToFit, MIN_ZOOM, MAX_ZOOM)
+  }
+
+  const maxZoom = shortSide / MIN_COMBAT_VIEW
+  return clamp(Math.max(combatZoom, Math.min(zoomToCover, maxZoom)), MIN_ZOOM, MAX_ZOOM)
 }

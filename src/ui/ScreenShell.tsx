@@ -6,5 +6,9 @@ type ScreenShellProps = {
 }
 
 export function ScreenShell({ children, className = '' }: ScreenShellProps) {
-  return <div className={['screen-shell', className].filter(Boolean).join(' ')}>{children}</div>
+  return (
+    <div data-allow-touch-scroll className={['screen-shell', className].filter(Boolean).join(' ')}>
+      {children}
+    </div>
+  )
 }

@@ -368,6 +368,39 @@ input[type="text"] {
   max-width: 42rem;
 }
 
+@media (orientation: landscape) and (max-height: 520px) {
+  .menu-layout {
+    max-width: 64rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .menu-copy {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+
+  .menu-title {
+    font-size: clamp(2.2rem, 14vh, 4rem);
+    margin-bottom: 0.45rem;
+  }
+
+  .menu-blurb {
+    font-size: 0.95rem;
+  }
+
+  .menu-actions {
+    flex: 0 1 20rem;
+    width: min(20rem, 50%);
+  }
+
+  .menu-tagline {
+    margin-top: 0.35rem;
+  }
+}
+
 .weapon-chip {
   appearance: none;
   min-width: 0;
@@ -406,10 +439,15 @@ input[type="text"] {
 }
 
 @container play (max-height: 440px) {
+  .weapon-rack {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    max-width: none;
+  }
+
   .weapon-chip {
-    min-height: 2.15rem;
-    font-size: 0.62rem;
-    padding: 0.18rem 0.15rem;
+    min-height: 2.35rem;
+    font-size: 0.58rem;
+    padding: 0.18rem 0.1rem;
   }
 
   .hud-panel-compact {
@@ -435,8 +473,13 @@ input[type="text"] {
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
+  .weapon-rack {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    max-width: none;
+  }
+
   .weapon-chip {
-    min-height: 2.15rem;
-    font-size: 0.62rem;
+    min-height: 2.35rem;
+    font-size: 0.58rem;
   }
 }
