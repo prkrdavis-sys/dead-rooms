@@ -98,9 +98,11 @@ export function SetupScreen({ value, onChange, onStart, onBack }: SetupScreenPro
           Warm-up is a handful. Meat grinder floods the room. Enemy counts scale; the tells stay honest.
         </p>
       </section>
-      <button type="button" className="btn btn-primary py-4 text-lg tracking-[0.18em]" onClick={onStart}>
-        Enter the room
-      </button>
+      <div className="setup-start">
+        <button type="button" className="btn btn-primary w-full py-4 text-lg tracking-[0.18em]" onClick={onStart}>
+          Enter the room
+        </button>
+      </div>
     </ScreenShell>
   )
 }
