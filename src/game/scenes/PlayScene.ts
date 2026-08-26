@@ -381,7 +381,7 @@ export class PlayScene extends Phaser.Scene {
       dy = 0
     }
     const dashing = this.now < this.dashUntil
-    const speed = dashing ? 420 : 178
+    const speed = dashing ? 420 : 200
     this.player.setVelocity(dx * speed, dy * speed)
     this.player.setRotation(Math.atan2(this.facing.y, this.facing.x))
     if (this.now < this.invulnUntil) {
