@@ -1,13 +1,10 @@
-export type EnemyId =
-  | 'shambler'
-  | 'runner'
-  | 'infernal'
-  | 'blinker'
-  | 'wraps'
-  | 'bloater'
+import type { CharacterPackId } from '../game/characterAssets'
+
+export type EnemyId = 'shambler' | 'runner' | 'infernal' | 'blinker' | 'bloater'
 
 export type EnemyAttack = 'melee' | 'fireline' | 'teleport' | 'explode'
 
+/** Swarm-mode creatures. Squad modes use heroes on both sides instead. */
 export type EnemyDef = {
   id: EnemyId
   name: string
@@ -18,9 +15,11 @@ export type EnemyDef = {
   radius: number
   scale: number
   tint: number
-  texture: string
+  pack: CharacterPackId
   attack: EnemyAttack
   score: number
+  /** Distance at which the creature notices an unlit, still player. */
+  senseRange: number
   telegraphMs?: number
   cooldownMs?: number
   explodeRadius?: number
@@ -38,13 +37,14 @@ export const ENEMIES: EnemyDef[] = [
     damage: 8,
     radius: 14,
     scale: 1,
-    tint: 0xffffff,
-    texture: 'zombie',
+    tint: 0x7f9f7a,
+    pack: 'zombie',
     attack: 'melee',
     score: 100,
+    senseRange: 220,
     blurb:
-      'The first thing the sirens were for. Grey-green, hungry, and too stupid to stop. Alone they are a limp. In a crowd they are a wall.',
-    tell: 'Dragging walk, green rags, always coming straight at you.',
+      'The first thing the sirens were for. Too stupid to stop and too many to count. In the dark you hear the drag before you see the shape.',
+    tell: 'Dragging walk, always coming straight at you.',
   },
   {
     id: 'runner',
@@ -56,84 +56,71 @@ export const ENEMIES: EnemyDef[] = [
     radius: 12,
     scale: 0.92,
     tint: 0xff6b6b,
-    texture: 'runner',
+    pack: 'runner',
     attack: 'melee',
-    score: 140,
+    score: 150,
+    senseRange: 320,
     blurb:
-      'Whatever is left of the sprinters from Block C. They outrun your panic and fold you if you reload in the open.',
-    tell: 'Lean, blood-slick, sprints in a straight line. Kill them first.',
+      'Whatever it was before, it was in a hurry. Runners find the edge of your light and are already inside it.',
+    tell: 'Sprint, no hesitation, arrives before the sound does.',
   },
   {
     id: 'infernal',
     name: 'Infernal',
-    role: 'Ranged fire line',
-    hp: 90,
-    speed: 48,
-    damage: 22,
-    radius: 15,
+    role: 'Ranged line',
+    hp: 60,
+    speed: 74,
+    damage: 16,
+    radius: 14,
     scale: 1.05,
-    tint: 0xff4a1a,
-    texture: 'robot',
+    tint: 0xfb923c,
+    pack: 'blinker',
     attack: 'fireline',
-    score: 220,
+    score: 240,
+    senseRange: 360,
     telegraphMs: 700,
-    cooldownMs: 2400,
+    cooldownMs: 2200,
     blurb:
-      'Not a corpse. A leftover from the burn teams that never came home. It plants its feet, lights a line, and anything in that line cooks.',
-    tell: 'Horns of heat, red glow, a bright line on the floor before the flame.',
+      'It stands still, lines you up, and spits something that keeps burning after it lands. The wind-up is the only warning you get.',
+    tell: 'Stops walking and a thin red line reaches for you.',
   },
   {
     id: 'blinker',
     name: 'Blinker',
-    role: 'Teleport bite',
-    hp: 55,
-    speed: 80,
+    role: 'Teleport melee',
+    hp: 46,
+    speed: 96,
     damage: 14,
     radius: 13,
     scale: 0.98,
-    tint: 0xc4b5fd,
-    texture: 'blinker',
+    tint: 0xc084fc,
+    pack: 'wraps',
     attack: 'teleport',
-    score: 180,
+    score: 260,
+    senseRange: 400,
     cooldownMs: 3800,
     blurb:
-      'Pale, wrong, and never where you left it. It folds space the way a hungry thing folds a napkin, then bites the nearest pulse.',
-    tell: 'Violet shimmer, vanishes, reappears at your shoulder.',
-  },
-  {
-    id: 'wraps',
-    name: 'Wraps',
-    role: 'Heavy melee',
-    hp: 110,
-    speed: 54,
-    damage: 20,
-    radius: 16,
-    scale: 1.12,
-    tint: 0xe8d5b5,
-    texture: 'wraps',
-    attack: 'melee',
-    score: 200,
-    blurb:
-      'Quarantine linen that learned to walk. Slow until it is close, then it hits like a sandbag full of bricks. Later waves drop them in your pocket.',
-    tell: 'Bandaged bulk, beige wraps, a heavy shoulder-check.',
+      'Does not walk the distance, just decides it was never there. Blinkers make your back the most interesting part of the room.',
+    tell: 'Vanishes at the edge of the cone, reappears behind you.',
   },
   {
     id: 'bloater',
     name: 'Bloater',
-    role: 'Walking bomb',
+    role: 'Suicide blast',
     hp: 70,
-    speed: 44,
-    damage: 12,
-    radius: 18,
-    scale: 1.32,
-    tint: 0x86efac,
-    texture: 'zombie',
+    speed: 70,
+    damage: 24,
+    radius: 16,
+    scale: 1.14,
+    tint: 0xa3e635,
+    pack: 'zombie',
     attack: 'explode',
-    explodeRadius: 86,
-    score: 160,
+    score: 280,
+    senseRange: 260,
+    explodeRadius: 96,
     blurb:
-      'A Shambler that drank the wrong drum. Kill it, but step off the punchline — the body is a grenade with opinions.',
-    tell: 'Swollen, sickly green, wet footsteps. Death is the attack.',
+      'Swollen, wet, and eager. Kill it at arm length and you share the outcome. Kill it at range and the room thanks you.',
+    tell: 'Fat silhouette, wobbles, keeps closing no matter the damage.',
   },
 ]
 

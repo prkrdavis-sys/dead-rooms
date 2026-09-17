@@ -1,28 +1,22 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import type { EnemyDef } from '../data/enemies'
+import type { GadgetId, HeroDef } from '../data/heroes'
 import type { RoomMap } from '../data/maps'
-import type { SpecialId } from '../data/specials'
-import type { WeaponId } from '../data/weapons'
 
-const PORTRAITS: Record<EnemyDef['id'], string> = {
-  shambler: '/assets/kenney/characters/zombie/zoimbie1_hold.png',
+const PACK_PORTRAITS: Record<string, string> = {
+  soldier: '/assets/kenney/characters/soldier/soldier1_hold.png',
+  survivor: '/assets/kenney/characters/survivor/survivor1_hold.png',
   runner: '/assets/kenney/characters/runner/womanGreen_hold.png',
-  infernal: '/assets/kenney/characters/robot/robot1_hold.png',
+  robot: '/assets/kenney/characters/robot/robot1_hold.png',
   blinker: '/assets/kenney/characters/blinker/manOld_hold.png',
   wraps: '/assets/kenney/characters/wraps/manBrown_hold.png',
-  bloater: '/assets/kenney/characters/zombie/zoimbie1_hold.png',
+  zombie: '/assets/kenney/characters/zombie/zoimbie1_hold.png',
 }
 
-function ThumbFrame({
-  label,
-  children,
-}: {
-  label: string
-  children: ReactNode
-}) {
+function ThumbFrame({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div
-      className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-[#5b2e24] bg-[#241810] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.4)] sm:h-[88px] sm:w-[88px]"
+      className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-[#1e3a4a] bg-[#070c12] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.5)] sm:h-[88px] sm:w-[88px]"
       aria-hidden="true"
       title={label}
     >
@@ -50,14 +44,12 @@ function TintedSprite({ src, tint, zoom }: { src: string; tint: number; zoom: nu
       const ox = (size - draw) / 2
       const oy = (size - draw) / 2 + 4
       ctx.drawImage(img, ox, oy, draw, draw)
-      if (tint !== 0xffffff) {
-        ctx.globalCompositeOperation = 'source-atop'
-        ctx.fillStyle = `#${tint.toString(16).padStart(6, '0')}`
-        ctx.globalAlpha = 0.55
-        ctx.fillRect(0, 0, size, size)
-        ctx.globalAlpha = 1
-        ctx.globalCompositeOperation = 'source-over'
-      }
+      ctx.globalCompositeOperation = 'source-atop'
+      ctx.fillStyle = `#${tint.toString(16).padStart(6, '0')}`
+      ctx.globalAlpha = 0.5
+      ctx.fillRect(0, 0, size, size)
+      ctx.globalAlpha = 1
+      ctx.globalCompositeOperation = 'source-over'
     }
   }, [src, tint, zoom])
 
@@ -67,7 +59,19 @@ function TintedSprite({ src, tint, zoom }: { src: string; tint: number; zoom: nu
 export function EnemyThumb({ enemy }: { enemy: EnemyDef }) {
   return (
     <ThumbFrame label={enemy.name}>
-      <TintedSprite src={PORTRAITS[enemy.id]} tint={enemy.tint} zoom={enemy.id === 'bloater' ? 1.15 : 0.92} />
+      <TintedSprite
+        src={PACK_PORTRAITS[enemy.pack] ?? PACK_PORTRAITS.zombie}
+        tint={enemy.tint}
+        zoom={enemy.id === 'bloater' ? 1.15 : 0.92}
+      />
+    </ThumbFrame>
+  )
+}
+
+export function HeroThumb({ hero }: { hero: HeroDef }) {
+  return (
+    <ThumbFrame label={hero.name}>
+      <TintedSprite src={PACK_PORTRAITS[hero.pack] ?? PACK_PORTRAITS.soldier} tint={hero.color} zoom={0.95} />
     </ThumbFrame>
   )
 }
@@ -80,18 +84,10 @@ function SvgIcon({ children }: { children: ReactNode }) {
   )
 }
 
-export function WeaponThumb({ id, name }: { id: WeaponId; name: string }) {
+export function GadgetThumb({ id, name }: { id: GadgetId; name: string }) {
   return (
     <ThumbFrame label={name}>
-      <SvgIcon>{weaponGlyph(id)}</SvgIcon>
-    </ThumbFrame>
-  )
-}
-
-export function SpecialThumb({ id, name }: { id: SpecialId; name: string }) {
-  return (
-    <ThumbFrame label={name}>
-      <SvgIcon>{specialGlyph(id)}</SvgIcon>
+      <SvgIcon>{gadgetGlyph(id)}</SvgIcon>
     </ThumbFrame>
   )
 }
@@ -107,7 +103,7 @@ export function MapThumb({ room }: { room: RoomMap }) {
         className="h-full w-full"
         preserveAspectRatio="xMidYMid meet"
       >
-        <rect width={cols * cell} height={rows * cell} fill="#2a2218" />
+        <rect width={cols * cell} height={rows * cell} fill="#070c12" />
         {room.rows.flatMap((line, r) =>
           [...line].map((ch, c) => {
             const x = c * cell
@@ -116,27 +112,56 @@ export function MapThumb({ room }: { room: RoomMap }) {
             if (ch === '#') {
               return (
                 <g key={key}>
-                  <rect x={x} y={y} width={cell} height={cell} fill="#16120f" />
-                  <rect x={x} y={y} width={cell} height={1.6} fill="#c45c1c" />
+                  <rect x={x} y={y} width={cell} height={cell} fill="#05080c" />
+                  <rect x={x} y={y} width={cell} height={1.4} fill="#22d3ee" opacity="0.5" />
                 </g>
               )
             }
+            const floor = <rect x={x} y={y} width={cell} height={cell} fill="#111a24" />
             if (ch === 'P') {
               return (
                 <g key={key}>
-                  <rect x={x} y={y} width={cell} height={cell} fill="#3a342c" />
-                  <circle cx={x + cell / 2} cy={y + cell / 2} r={1.8} fill="#f3e6d0" />
+                  {floor}
+                  <circle cx={x + cell / 2} cy={y + cell / 2} r={1.9} fill="#e2f5ff" />
+                </g>
+              )
+            }
+            if (ch === 'L') {
+              return (
+                <g key={key}>
+                  {floor}
+                  <circle cx={x + cell / 2} cy={y + cell / 2} r={1.6} fill="#fde68a" />
+                </g>
+              )
+            }
+            if (ch === 'E') {
+              return (
+                <g key={key}>
+                  {floor}
+                  <rect x={x + 1} y={y + 1} width={cell - 2} height={cell - 2} fill="none" stroke="#4ade80" strokeWidth="0.8" />
+                </g>
+              )
+            }
+            if (ch === 'B') {
+              return (
+                <g key={key}>
+                  {floor}
+                  <rect x={x + 2} y={y + 1.5} width={cell - 4} height={cell - 3} fill="#22d3ee" opacity="0.7" />
+                </g>
+              )
+            }
+            if (ch >= '1' && ch <= '4') {
+              return (
+                <g key={key}>
+                  {floor}
+                  <circle cx={x + cell / 2} cy={y + cell / 2} r={1.4} fill="#fb7185" />
                 </g>
               )
             }
             if (ch === 'S') {
-              return (
-                <g key={key}>
-                  <rect x={x} y={y} width={cell} height={cell} fill="#4a221c" />
-                </g>
-              )
+              return <rect key={key} x={x} y={y} width={cell} height={cell} fill="#1b2a1c" />
             }
-            return <rect key={key} x={x} y={y} width={cell} height={cell} fill="#3a342c" />
+            return <g key={key}>{floor}</g>
           }),
         )}
       </svg>
@@ -144,124 +169,61 @@ export function MapThumb({ room }: { room: RoomMap }) {
   )
 }
 
-function weaponGlyph(id: WeaponId): ReactNode {
+function gadgetGlyph(id: GadgetId): ReactNode {
   switch (id) {
-    case 'pistol':
+    case 'echo':
       return (
         <>
-          <rect x="10" y="30" width="28" height="10" rx="2" fill="#d6c7b0" />
-          <rect x="34" y="28" width="16" height="6" fill="#9ca3af" />
-          <rect x="16" y="40" width="8" height="12" fill="#a8a29e" />
-          <rect x="44" y="26" width="8" height="4" fill="#57534e" />
+          <circle cx="32" cy="32" r="8" fill="none" stroke="#67e8f9" strokeWidth="3" />
+          <circle cx="32" cy="32" r="17" fill="none" stroke="#67e8f9" strokeWidth="2" opacity="0.7" />
+          <circle cx="32" cy="32" r="26" fill="none" stroke="#67e8f9" strokeWidth="1.5" opacity="0.4" />
         </>
       )
-    case 'smg':
+    case 'focus':
       return (
         <>
-          <rect x="8" y="28" width="36" height="9" rx="1" fill="#a8a29e" />
-          <rect x="40" y="26" width="16" height="5" fill="#78716c" />
-          <rect x="18" y="37" width="7" height="14" fill="#57534e" />
-          <rect x="28" y="37" width="10" height="4" fill="#44403c" />
+          <polygon points="10,32 54,20 54,44" fill="#38bdf8" opacity="0.45" />
+          <line x1="10" y1="32" x2="58" y2="32" stroke="#e0f2fe" strokeWidth="2" />
+          <circle cx="10" cy="32" r="4" fill="#e0f2fe" />
         </>
       )
-    case 'shotgun':
+    case 'bulwark':
       return (
         <>
-          <rect x="6" y="30" width="44" height="8" rx="1" fill="#92400e" />
-          <rect x="46" y="28" width="12" height="6" fill="#d6d3d1" />
-          <rect x="14" y="38" width="10" height="12" fill="#78350f" />
+          <rect x="12" y="20" width="40" height="24" rx="2" fill="#0ea5e9" opacity="0.35" />
+          <rect x="12" y="20" width="40" height="24" rx="2" fill="none" stroke="#7dd3fc" strokeWidth="3" />
         </>
       )
-    case 'barrel':
+    case 'flashbang':
       return (
         <>
-          <rect x="18" y="12" width="28" height="40" rx="3" fill="#7f1d1d" />
-          <rect x="18" y="28" width="28" height="6" fill="#facc15" />
-          <rect x="22" y="16" width="20" height="4" fill="#450a0a" />
+          <circle cx="32" cy="32" r="10" fill="#fef9c3" />
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
+            <line
+              key={deg}
+              x1={32 + Math.cos((deg * Math.PI) / 180) * 14}
+              y1={32 + Math.sin((deg * Math.PI) / 180) * 14}
+              x2={32 + Math.cos((deg * Math.PI) / 180) * 26}
+              y2={32 + Math.sin((deg * Math.PI) / 180) * 26}
+              stroke="#fde68a"
+              strokeWidth="3"
+            />
+          ))}
         </>
       )
-    case 'grenade':
+    case 'beacon':
       return (
         <>
-          <circle cx="32" cy="36" r="14" fill="#3f6212" />
-          <rect x="26" y="14" width="12" height="8" rx="1" fill="#a3a3a3" />
-          <path d="M32 14 C40 8 48 16 44 22" stroke="#d4a017" fill="none" strokeWidth="2" />
+          <rect x="26" y="30" width="12" height="22" fill="#4c1d95" />
+          <circle cx="32" cy="24" r="10" fill="#a78bfa" />
+          <circle cx="32" cy="24" r="4" fill="#ede9fe" />
         </>
       )
-    case 'barricade':
+    case 'lightsout':
       return (
         <>
-          <rect x="8" y="22" width="48" height="20" fill="#57534e" />
-          <rect x="8" y="22" width="48" height="5" fill="#d6d3d1" />
-          <rect x="16" y="30" width="8" height="8" fill="#44403c" />
-          <rect x="40" y="30" width="8" height="8" fill="#44403c" />
-        </>
-      )
-    case 'mine':
-      return (
-        <>
-          <circle cx="32" cy="34" r="16" fill="#111827" />
-          <circle cx="32" cy="34" r="7" fill="#ef4444" />
-          <circle cx="32" cy="34" r="3" fill="#fecaca" />
-        </>
-      )
-    case 'rocket':
-      return (
-        <>
-          <rect x="8" y="28" width="36" height="10" fill="#d97706" />
-          <polygon points="44,24 60,33 44,42" fill="#fde68a" />
-          <rect x="12" y="38" width="10" height="10" fill="#78350f" />
-        </>
-      )
-    case 'charge':
-      return (
-        <>
-          <rect x="14" y="18" width="36" height="28" rx="2" fill="#1f2937" />
-          <rect x="18" y="24" width="28" height="8" fill="#22d3ee" />
-          <rect x="20" y="36" width="8" height="6" fill="#6b7280" />
-        </>
-      )
-    case 'railgun':
-      return (
-        <>
-          <rect x="6" y="30" width="48" height="6" fill="#67e8f9" />
-          <rect x="8" y="26" width="22" height="14" rx="2" fill="#334155" />
-          <rect x="16" y="40" width="8" height="10" fill="#1e293b" />
-          <circle cx="54" cy="33" r="4" fill="#ecfeff" />
-        </>
-      )
-    default: {
-      const _never: never = id
-      return _never
-    }
-  }
-}
-
-function specialGlyph(id: SpecialId): ReactNode {
-  switch (id) {
-    case 'dash':
-      return (
-        <>
-          <polygon points="12,32 28,18 28,26 52,26 52,38 28,38 28,46" fill="#f3e6d0" />
-          <rect x="8" y="28" width="8" height="3" fill="#d4a017" />
-          <rect x="8" y="34" width="12" height="3" fill="#d4a017" />
-        </>
-      )
-    case 'airstrike':
-      return (
-        <>
-          <circle cx="32" cy="36" r="16" fill="none" stroke="#f87171" strokeWidth="3" />
-          <path d="M32 12 L28 28 L32 24 L36 28 Z" fill="#e11d48" />
-          <line x1="24" y1="36" x2="40" y2="36" stroke="#f87171" strokeWidth="2" />
-          <line x1="32" y1="28" x2="32" y2="44" stroke="#f87171" strokeWidth="2" />
-        </>
-      )
-    case 'stomp':
-      return (
-        <>
-          <circle cx="32" cy="38" r="14" fill="none" stroke="#d4a017" strokeWidth="3" />
-          <circle cx="32" cy="38" r="7" fill="none" stroke="#f3e6d0" strokeWidth="2" />
-          <rect x="26" y="12" width="12" height="20" fill="#a8a29e" />
+          <circle cx="32" cy="28" r="12" fill="none" stroke="#94a3b8" strokeWidth="3" />
+          <line x1="16" y1="46" x2="48" y2="14" stroke="#f87171" strokeWidth="4" />
         </>
       )
     default: {

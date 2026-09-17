@@ -1,13 +1,16 @@
 import type { ReactNode } from 'react'
+import { HEROES, type HeroId } from '../data/heroes'
 import { MAPS, type MapId } from '../data/maps'
-import { SPECIALS, type SpecialId } from '../data/specials'
+import { MODES, type ModeId } from '../data/modes'
 import { DIFFICULTY_LEVELS } from '../lib/storage'
 import { ChoiceRow } from './ChoiceRow'
+import { HeroThumb } from './LibraryThumbs'
 import { ScreenShell } from './ScreenShell'
 
 export type SetupValue = {
+  modeId: ModeId
   mapId: MapId
-  specialId: SpecialId
+  heroId: HeroId
   difficulty: number
 }
 
@@ -22,11 +25,13 @@ function ChoiceCard({
   selected,
   onSelect,
   title,
+  tag,
   children,
 }: {
   selected: boolean
   onSelect: () => void
   title: string
+  tag?: string
   children: ReactNode
 }) {
   return (
@@ -38,8 +43,8 @@ function ChoiceCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="text-sm font-bold uppercase tracking-wider">{title}</div>
-        {selected ? (
-          <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.16em] text-[#f3e6d0]">Selected</span>
+        {tag ? (
+          <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7ea4b8]">{tag}</span>
         ) : null}
       </div>
       {children}
@@ -54,10 +59,55 @@ export function SetupScreen({ value, onChange, onStart, onBack }: SetupScreenPro
         <button type="button" className="btn btn-ghost shrink-0" onClick={onBack}>
           Back
         </button>
-        <h1 className="m-0 min-w-0 flex-1 text-lg tracking-[0.18em] uppercase sm:text-3xl">Choose the room</h1>
+        <h1 className="m-0 min-w-0 flex-1 text-lg tracking-[0.18em] uppercase sm:text-3xl">Deployment</h1>
       </header>
+
       <section>
-        <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-[#d4a017]">Map</h2>
+        <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-[#22d3ee]">Mode</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {MODES.map((mode) => (
+            <ChoiceCard
+              key={mode.id}
+              selected={value.modeId === mode.id}
+              title={mode.name}
+              tag={value.modeId === mode.id ? 'Selected' : undefined}
+              onSelect={() => onChange({ ...value, modeId: mode.id })}
+            >
+              <p className="mt-2 text-sm text-[#a9c4d2]">{mode.tagline}</p>
+              <p className="mt-2 text-xs text-[#67e8f9]">{mode.objective}</p>
+            </ChoiceCard>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-[#22d3ee]">Operator</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {HEROES.map((hero) => (
+            <ChoiceCard
+              key={hero.id}
+              selected={value.heroId === hero.id}
+              title={hero.name}
+              tag={hero.role}
+              onSelect={() => onChange({ ...value, heroId: hero.id })}
+            >
+              <div className="mt-2 flex gap-3">
+                <HeroThumb hero={hero} />
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 text-sm text-[#a9c4d2]">{hero.weapon.name}</p>
+                  <p className="mt-1 mb-0 text-xs text-[#7ea4b8]">
+                    {hero.hp} hp · {hero.armor} armour · {hero.cone.spreadDeg}° light
+                  </p>
+                  <p className="mt-1 mb-0 text-xs text-[#67e8f9]">{hero.gadget.name}</p>
+                </div>
+              </div>
+            </ChoiceCard>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-[#22d3ee]">Building</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {MAPS.map((room) => (
             <ChoiceCard
@@ -66,41 +116,27 @@ export function SetupScreen({ value, onChange, onStart, onBack }: SetupScreenPro
               title={room.name}
               onSelect={() => onChange({ ...value, mapId: room.id })}
             >
-              <p className="mt-2 text-sm text-[#d6c7b0]">{room.tagline}</p>
+              <p className="mt-2 text-sm text-[#a9c4d2]">{room.tagline}</p>
             </ChoiceCard>
           ))}
         </div>
       </section>
-      <section>
-        <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-[#d4a017]">Special move</h2>
-        <div className="grid gap-3 md:grid-cols-3">
-          {SPECIALS.map((special) => (
-            <ChoiceCard
-              key={special.id}
-              selected={value.specialId === special.id}
-              title={special.name}
-              onSelect={() => onChange({ ...value, specialId: special.id })}
-            >
-              <p className="mt-2 text-sm text-[#d6c7b0]">{special.blurb}</p>
-              <p className="mt-2 text-xs text-[#f87171]">{special.how}</p>
-            </ChoiceCard>
-          ))}
-        </div>
-      </section>
+
       <section className="panel p-4">
         <ChoiceRow
-          label="Difficulty — how many come per round"
+          label="Difficulty — how sharp the opposition is"
           value={value.difficulty}
           options={DIFFICULTY_LEVELS.map((level) => ({ value: level.value, label: level.label }))}
           onChange={(difficulty) => onChange({ ...value, difficulty })}
         />
-        <p className="mt-2 mb-0 text-sm text-[#d6c7b0]">
-          Warm-up is a handful. Meat grinder floods the room. Enemy counts scale; the tells stay honest.
+        <p className="mt-2 mb-0 text-sm text-[#a9c4d2]">
+          Higher difficulty means better aim, more squads, and denser waves. Their flashlights are just as honest as yours.
         </p>
       </section>
+
       <div className="setup-start">
         <button type="button" className="btn btn-primary w-full py-4 text-lg tracking-[0.18em]" onClick={onStart}>
-          Enter the room
+          Go dark
         </button>
       </div>
     </ScreenShell>

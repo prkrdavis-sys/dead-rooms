@@ -1,9 +1,11 @@
+import type { HeroId } from '../data/heroes'
 import type { MapId } from '../data/maps'
-import type { SpecialId } from '../data/specials'
+import type { ModeId } from '../data/modes'
 
 export type RunConfig = {
+  modeId: ModeId
   mapId: MapId
-  specialId: SpecialId
+  heroId: HeroId
   difficulty: number
   gore: number
   music: number
@@ -13,4 +15,3 @@ export type RunConfig = {
 
 export const GAME_WIDTH = 960
 export const GAME_HEIGHT = 540
-export const PLAYER_MAX_HP = 100

@@ -42,14 +42,14 @@
 }
 
 :root {
-  --bg: #0c0808;
-  --panel: rgba(20, 12, 12, 0.94);
-  --line: #3f2a22;
+  --bg: #05070a;
+  --panel: rgba(8, 14, 20, 0.94);
+  --line: #1e3a4a;
   --blood: #b42318;
   --blood-2: #7f1d1d;
-  --cream: #f3e6d0;
-  --muted: #b8a38d;
-  --ok: #d4a017;
+  --cream: #d8ecf5;
+  --muted: #7ea4b8;
+  --ok: #22d3ee;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -120,8 +120,8 @@ select {
 
 .btn {
   appearance: none;
-  border: 1px solid #6b2c22;
-  background: linear-gradient(#4a1c18, #2a0f0e);
+  border: 1px solid #1e4b5c;
+  background: linear-gradient(#0d2732, #07141b);
   color: var(--cream);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -133,19 +133,19 @@ select {
 
 .btn:hover,
 .btn:focus-visible {
-  border-color: #e11d48;
-  background: linear-gradient(#6b221c, #3a1210);
+  border-color: #22d3ee;
+  background: linear-gradient(#123c4c, #0a1d26);
 }
 
 .btn-primary {
-  background: linear-gradient(#b42318, #7a140f);
-  border-color: #f59a8a;
+  background: linear-gradient(#0e7490, #075985);
+  border-color: #67e8f9;
   font-weight: 700;
 }
 
 .btn-ghost {
   background: transparent;
-  border-color: #4b342c;
+  border-color: #1e3a4a;
 }
 
 .panel {
@@ -165,11 +165,11 @@ button.panel {
 /* Unlayered .panel box-shadow wins over Tailwind ring utilities, so selection
    has to live here or the highlight never shows. */
 .panel.is-selected {
-  border-color: #e11d48;
-  background: rgba(48, 14, 16, 0.96);
+  border-color: #22d3ee;
+  background: rgba(10, 34, 44, 0.96);
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.45),
-    0 0 0 3px #e11d48;
+    0 0 0 3px #22d3ee;
 }
 
 .modal-backdrop {
@@ -189,8 +189,8 @@ button.panel {
   overflow: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
-  background: #140c0c;
-  border: 1px solid #5b2e24;
+  background: #070d13;
+  border: 1px solid #1e3a4a;
   border-radius: 12px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
 }
@@ -201,8 +201,8 @@ button.panel {
 
 .hud-bar {
   height: 10px;
-  border: 1px solid #3f1d1d;
-  background: #1a0c0c;
+  border: 1px solid #16313d;
+  background: #07131a;
   overflow: hidden;
   border-radius: 99px;
 }
@@ -210,7 +210,94 @@ button.panel {
 .hud-bar > span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #7f1d1d, #ef4444);
+  background: linear-gradient(90deg, #7f1d1d, #f87171);
+}
+
+.hud-pip {
+  display: block;
+  flex: 1 1 0;
+  height: 5px;
+  border-radius: 99px;
+  border: 1px solid #16313d;
+  background: #07131a;
+}
+
+.hud-pip.is-on {
+  background: linear-gradient(90deg, #0ea5e9, #7dd3fc);
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
+}
+
+.hud-dial {
+  position: relative;
+  width: 3.4rem;
+  height: 3.4rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid #16313d;
+  background: rgba(7, 13, 19, 0.82);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.hud-dial.is-ready {
+  border-color: #22d3ee;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.35);
+}
+
+.hud-dial-fill {
+  position: absolute;
+  inset: auto 0 0 0;
+  background: rgba(14, 116, 144, 0.55);
+}
+
+.hud-dial-label {
+  position: relative;
+  padding: 0 0.15rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  color: var(--cream);
+}
+
+.hud-squad {
+  display: flex;
+  max-width: 34rem;
+}
+
+.hud-squad-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.25rem 0.4rem;
+  border-radius: 0.35rem;
+  border: 1px solid #16313d;
+  background: rgba(7, 13, 19, 0.78);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.hud-squad-chip.is-down {
+  opacity: 0.4;
+}
+
+.hud-squad-bar {
+  display: block;
+  margin-top: 0.2rem;
+  height: 3px;
+  border-radius: 99px;
+  background: #07131a;
+  overflow: hidden;
+}
+
+.hud-squad-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0ea5e9, #7dd3fc);
 }
 
 canvas,
@@ -222,8 +309,8 @@ canvas,
   width: clamp(3.6rem, 16vmin, 4.6rem);
   height: clamp(3.6rem, 16vmin, 4.6rem);
   border-radius: 999px;
-  border: 2px solid rgba(243, 230, 208, 0.35);
-  background: rgba(20, 12, 12, 0.55);
+  border: 2px solid rgba(125, 211, 252, 0.35);
+  background: rgba(7, 13, 19, 0.55);
   color: var(--cream);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -241,13 +328,13 @@ canvas,
 
 .touch-btn:active,
 .touch-btn.active {
-  background: rgba(180, 35, 24, 0.55);
+  background: rgba(14, 116, 144, 0.6);
 }
 
 input[type="text"] {
   width: 100%;
-  background: #1a1010;
-  border: 1px solid #4b342c;
+  background: #0a141c;
+  border: 1px solid #1e3a4a;
   color: var(--cream);
   padding: 0.55rem 0.7rem;
   border-radius: 6px;
@@ -277,13 +364,13 @@ input[type="text"] {
 
 .death-vignette {
   background:
-    radial-gradient(circle at center, rgba(80, 8, 8, 0.08) 0%, rgba(40, 0, 0, 0.55) 70%, rgba(0, 0, 0, 0.72) 100%);
+    radial-gradient(circle at center, rgba(12, 40, 52, 0.1) 0%, rgba(2, 8, 12, 0.6) 70%, rgba(0, 0, 0, 0.8) 100%);
 }
 
 .death-screen {
   animation: death-in 0.65s ease-out;
   background:
-    radial-gradient(circle at center, rgba(90, 10, 12, 0.72) 0%, rgba(8, 2, 2, 0.94) 70%);
+    radial-gradient(circle at center, rgba(8, 40, 54, 0.7) 0%, rgba(2, 4, 7, 0.95) 70%);
 }
 
 .death-screen::before {
@@ -299,10 +386,10 @@ input[type="text"] {
 
 .death-card {
   position: relative;
-  border-color: #7f1d1d;
+  border-color: #155e75;
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.55),
-    0 0 40px rgba(180, 35, 24, 0.22);
+    0 0 40px rgba(34, 211, 238, 0.2);
 }
 
 .death-title {
@@ -311,8 +398,8 @@ input[type="text"] {
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #e11d48;
-  text-shadow: 0 0 34px rgba(225, 29, 72, 0.5);
+  color: #67e8f9;
+  text-shadow: 0 0 34px rgba(34, 211, 238, 0.45);
   animation: death-title-in 0.7s ease-out;
 }
 
@@ -351,8 +438,8 @@ input[type="text"] {
 
 .hud-panel {
   border-radius: 0.5rem;
-  border: 1px solid #3f2a22;
-  background: rgba(8, 4, 4, 0.8);
+  border: 1px solid #16313d;
+  background: rgba(5, 10, 15, 0.82);
   padding: 0.5rem;
   backdrop-filter: blur(4px);
 }
@@ -367,14 +454,6 @@ input[type="text"] {
   padding: 0.45rem 0.7rem;
   font-size: 0.7rem;
   align-self: stretch;
-}
-
-.weapon-rack {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.35rem;
-  width: 100%;
-  max-width: 42rem;
 }
 
 @media (orientation: landscape) and (max-height: 520px) {
@@ -410,27 +489,6 @@ input[type="text"] {
   }
 }
 
-.weapon-chip {
-  appearance: none;
-  min-width: 0;
-  min-height: 2.75rem;
-  padding: 0.3rem 0.2rem;
-  border-radius: 0.35rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(8, 4, 4, 0.78);
-  color: var(--cream);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 1.1;
-}
-
-.weapon-chip.is-selected {
-  border-color: #e11d48;
-  background: #b42318;
-}
-
 .touch-stick {
   width: clamp(6.5rem, 28vmin, 8.25rem);
   height: clamp(6.5rem, 28vmin, 8.25rem);
@@ -448,17 +506,6 @@ input[type="text"] {
 }
 
 @container play (max-height: 440px) {
-  .weapon-rack {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
-    max-width: none;
-  }
-
-  .weapon-chip {
-    min-height: 2.35rem;
-    font-size: 0.58rem;
-    padding: 0.18rem 0.1rem;
-  }
-
   .hud-panel-compact {
     padding: 0.3rem 0.45rem;
   }
@@ -481,14 +528,3 @@ input[type="text"] {
   }
 }
 
-@media (orientation: landscape) and (max-height: 500px) {
-  .weapon-rack {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
-    max-width: none;
-  }
-
-  .weapon-chip {
-    min-height: 2.35rem;
-    font-size: 0.58rem;
-  }
-}
