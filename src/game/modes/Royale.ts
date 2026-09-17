@@ -3,7 +3,7 @@ import { HERO_IDS } from '../../data/heroes'
 import { MODE_BY_ID } from '../../data/modes'
 import { TILE } from '../../data/maps'
 import { TEAM_PLAYER, type Actor } from '../actors/Actor'
-import { randomOpenTile } from '../world/grid'
+import { randomOpenTile, type Vec } from '../world/grid'
 import type { ModeContext, ModeController, MatchOutcome, ModeHud, SafeZone } from './ModeController'
 
 const SHRINK_EVERY_MS = 24000
@@ -30,10 +30,12 @@ export class Royale implements ModeController {
     const { grid, registry, run, scene } = this.ctx
     registry.spawnHero(run.heroId, TEAM_PLAYER, grid.playerStart.x, grid.playerStart.y, true)
 
-    const rivals = 7 + Math.round(this.ctx.run.difficulty / 2)
+    // Small buildings cannot hold a full lobby without everyone landing on
+    // top of each other, so the count follows the floor space.
+    const rivals = Math.min(7 + Math.round(this.ctx.run.difficulty / 2), Math.floor(grid.openTiles.length / 36))
     const taken = [grid.playerStart]
     for (let i = 0; i < rivals; i += 1) {
-      const spot = randomOpenTile(grid, taken, 220)
+      const spot = this.spreadSpawn(taken)
       taken.push(spot)
       const heroId = HERO_IDS[Math.floor(Math.random() * HERO_IDS.length)] ?? 'grit'
       registry.spawnHero(heroId, i + 1, spot.x, spot.y, false)
@@ -51,6 +53,33 @@ export class Royale implements ModeController {
     this.targetRadius = this.zone.radius
     this.nextShrinkAt = scene.time.now + SHRINK_EVERY_MS
     this.ctx.banner(`${rivals + 1} IN THE DARK`, 2200)
+  }
+
+  /**
+   * Nobody should be able to walk into somebody else's opening burst. Rivals
+   * keep well clear of the player and loosely clear of each other.
+   */
+  private spreadSpawn(taken: Vec[]): Vec {
+    const player = taken[0]
+    let best = taken[0]
+    let bestScore = -1
+    for (let attempt = 0; attempt < 90; attempt += 1) {
+      const pick = randomOpenTile(this.ctx.grid, [], 0)
+      const fromPlayer = Phaser.Math.Distance.Between(pick.x, pick.y, player.x, player.y)
+      const fromOthers = taken
+        .slice(1)
+        .reduce(
+          (min, point) => Math.min(min, Phaser.Math.Distance.Between(pick.x, pick.y, point.x, point.y)),
+          Number.POSITIVE_INFINITY,
+        )
+      if (fromPlayer > 560 && fromOthers > 260) return pick
+      const score = Math.min(fromPlayer, fromOthers === Number.POSITIVE_INFINITY ? fromPlayer : fromOthers)
+      if (score > bestScore) {
+        bestScore = score
+        best = pick
+      }
+    }
+    return best
   }
 
   update(delta: number, now: number): void {
