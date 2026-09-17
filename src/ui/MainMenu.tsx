@@ -31,24 +31,24 @@ export function MainMenu({
 
   return (
     <div className="relative h-full">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#4a1510_0%,#0c0808_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#0b3a4a_0%,#05070a_58%)]" />
       <ScreenShell className="relative">
         <div className="menu-layout mx-auto flex min-h-full w-full max-w-xl flex-col justify-between gap-6">
           <header className="menu-copy">
             <h1 className="menu-title mb-3 font-display text-[clamp(2.6rem,12vw+1rem,5.5rem)] leading-[0.85] tracking-[0.06em] uppercase">
               Dead Rooms
             </h1>
-            <p className="menu-blurb max-w-md font-body text-base leading-snug text-[#d6c7b0] sm:text-lg">
-              Pick a sealed room. Walk with WASD or the stick. Shoot the way you are facing. The dead do not learn, but
-              they do multiply.
+            <p className="menu-blurb max-w-md font-body text-base leading-snug text-[#a9c4d2] sm:text-lg">
+              A building with the power half out. You see one cone of light, your squad sees theirs, and everything else
+              is a guess. Pick an operator, go in dark, come out alone.
             </p>
           </header>
           <div className="menu-actions grid gap-2">
             <button type="button" className="btn btn-primary py-4 text-lg tracking-[0.2em]" onClick={onPlay}>
-              Survive
+              Deploy
             </button>
             <button type="button" className="btn" onClick={onLibrary}>
-              Library
+              Field manual
             </button>
             <div className="grid grid-cols-2 gap-2">
               <button type="button" className="btn" onClick={onProfiles}>

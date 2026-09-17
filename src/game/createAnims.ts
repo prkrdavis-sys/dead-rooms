@@ -1,12 +1,13 @@
 import Phaser from 'phaser'
 import {
   CHARACTER_PACKS,
+  CHARACTER_POSES,
   CHAR_BODY,
   CHAR_FRAME_H,
   CHAR_FRAME_W,
   CHAR_STAMP,
+  poseSheetKey,
   rawTextureKey,
-  soldierSheetKey,
   type CharacterPackId,
   type CharacterPose,
 } from './characterAssets'
@@ -14,25 +15,16 @@ import {
 const IDLE_FRAMES = 4
 const WALK_FRAMES = 8
 const FIRE_FRAMES = 4
-const DEATH_FRAMES = 8
-const SOLDIER_TOTAL = IDLE_FRAMES + WALK_FRAMES + FIRE_FRAMES
-const ENEMY_TOTAL = IDLE_FRAMES + WALK_FRAMES
-
-export const SOLDIER_DEATH_ANIM = 'soldier-death'
+const POSE_TOTAL = IDLE_FRAMES + WALK_FRAMES + FIRE_FRAMES
 
 function sourceImage(scene: Phaser.Scene, key: string): CanvasImageSource | null {
   if (!scene.textures.exists(key)) return null
   return scene.textures.get(key).getSourceImage() as CanvasImageSource
 }
 
-function drawFeet(
-  ctx: CanvasRenderingContext2D,
-  t: number,
-  stride: number,
-  alpha: number,
-): void {
+function drawFeet(ctx: CanvasRenderingContext2D, t: number, stride: number, alpha: number): void {
   const reach = Math.sin(t) * stride
-  ctx.fillStyle = `rgba(22, 16, 12, ${alpha})`
+  ctx.fillStyle = `rgba(10, 14, 20, ${alpha})`
   ctx.beginPath()
   ctx.ellipse(CHAR_BODY.x - 1 + reach, CHAR_BODY.y - 11, 6.5, 3.4, 0, 0, Math.PI * 2)
   ctx.fill()
@@ -142,7 +134,7 @@ function makeAnim(
   })
 }
 
-function soldierGlow(pose: CharacterPose): string {
+function poseGlow(pose: CharacterPose): string {
   switch (pose) {
     case 'gun':
       return 'rgba(253, 224, 71, 0.55)'
@@ -163,13 +155,13 @@ function soldierGlow(pose: CharacterPose): string {
   }
 }
 
-function buildSoldierPose(scene: Phaser.Scene, pose: CharacterPose): void {
-  const img = sourceImage(scene, rawTextureKey('soldier', pose))
+function buildPose(scene: Phaser.Scene, packId: CharacterPackId, pose: CharacterPose): void {
+  const img = sourceImage(scene, rawTextureKey(packId, pose))
   if (!img) return
   const fireImg =
-    pose === 'hold' ? (sourceImage(scene, rawTextureKey('soldier', 'reload')) ?? img) : img
+    pose === 'hold' ? (sourceImage(scene, rawTextureKey(packId, 'reload')) ?? img) : img
   const canvas = document.createElement('canvas')
-  canvas.width = CHAR_FRAME_W * SOLDIER_TOTAL
+  canvas.width = CHAR_FRAME_W * POSE_TOTAL
   canvas.height = CHAR_FRAME_H
   const ctx = canvas.getContext('2d')
   if (!ctx) return
@@ -181,104 +173,44 @@ function buildSoldierPose(scene: Phaser.Scene, pose: CharacterPose): void {
     paintWalk(ctx, img, i, (IDLE_FRAMES + i) * CHAR_FRAME_W, null)
   }
   for (let i = 0; i < FIRE_FRAMES; i += 1) {
-    paintFire(ctx, fireImg, i, (IDLE_FRAMES + WALK_FRAMES + i) * CHAR_FRAME_W, soldierGlow(pose))
+    paintFire(ctx, fireImg, i, (IDLE_FRAMES + WALK_FRAMES + i) * CHAR_FRAME_W, poseGlow(pose))
   }
 
-  const sheet = soldierSheetKey(pose)
-  addSheet(scene, sheet, canvas, SOLDIER_TOTAL)
+  const sheet = poseSheetKey(packId, pose)
+  addSheet(scene, sheet, canvas, POSE_TOTAL)
   makeAnim(scene, `${sheet}-idle`, sheet, 0, IDLE_FRAMES - 1, 7, -1)
   makeAnim(scene, `${sheet}-walk`, sheet, IDLE_FRAMES, IDLE_FRAMES + WALK_FRAMES - 1, 14, -1)
-  makeAnim(
-    scene,
-    `${sheet}-fire`,
-    sheet,
-    IDLE_FRAMES + WALK_FRAMES,
-    SOLDIER_TOTAL - 1,
-    22,
-    0,
-  )
-}
-
-function paintDeath(
-  ctx: CanvasRenderingContext2D,
-  img: CanvasImageSource,
-  index: number,
-  ox: number,
-): void {
-  const t = index / Math.max(1, DEATH_FRAMES - 1)
-  const collapse = t * t
-  const stumble = Math.sin(t * Math.PI) * (1 - t)
-  ctx.save()
-  ctx.translate(ox, 0)
-  ctx.beginPath()
-  ctx.rect(0, 0, CHAR_FRAME_W, CHAR_FRAME_H)
-  ctx.clip()
-  drawFeet(ctx, t * 2, 2 + collapse * 2, 0.35 + t * 0.25)
-  ctx.save()
-  ctx.translate(CHAR_BODY.x + stumble * 3, CHAR_BODY.y + collapse * 2)
-  ctx.rotate(-collapse * 0.32)
-  ctx.translate(-CHAR_BODY.x, -CHAR_BODY.y)
-  ctx.drawImage(img, CHAR_STAMP.x, CHAR_STAMP.y + collapse * 2)
-  ctx.restore()
-  ctx.globalCompositeOperation = 'source-atop'
-  ctx.fillStyle = `rgba(90, 8, 8, ${collapse * 0.16})`
-  ctx.fillRect(0, 0, CHAR_FRAME_W, CHAR_FRAME_H)
-  ctx.globalCompositeOperation = 'source-over'
-  ctx.restore()
-}
-
-function buildSoldierDeath(scene: Phaser.Scene): void {
-  const img =
-    sourceImage(scene, rawTextureKey('soldier', 'stand')) ??
-    sourceImage(scene, rawTextureKey('soldier', 'hold'))
-  if (!img) return
-  const canvas = document.createElement('canvas')
-  canvas.width = CHAR_FRAME_W * DEATH_FRAMES
-  canvas.height = CHAR_FRAME_H
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-  for (let i = 0; i < DEATH_FRAMES; i += 1) {
-    paintDeath(ctx, img, i, i * CHAR_FRAME_W)
-  }
-  addSheet(scene, SOLDIER_DEATH_ANIM, canvas, DEATH_FRAMES)
-  makeAnim(scene, SOLDIER_DEATH_ANIM, SOLDIER_DEATH_ANIM, 0, DEATH_FRAMES - 1, 8, 0)
-}
-
-function buildEnemyPack(scene: Phaser.Scene, packId: CharacterPackId): void {
-  const hold = sourceImage(scene, rawTextureKey(packId, 'hold'))
-  const stand = sourceImage(scene, rawTextureKey(packId, 'stand'))
-  if (!hold) return
-  const canvas = document.createElement('canvas')
-  canvas.width = CHAR_FRAME_W * ENEMY_TOTAL
-  canvas.height = CHAR_FRAME_H
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-
-  const idleSrc = stand ?? hold
-  for (let i = 0; i < IDLE_FRAMES; i += 1) {
-    paintIdle(ctx, idleSrc, i, i * CHAR_FRAME_W)
-  }
-  for (let i = 0; i < WALK_FRAMES; i += 1) {
-    paintWalk(ctx, hold, i, (IDLE_FRAMES + i) * CHAR_FRAME_W, stand)
-  }
-
-  addSheet(scene, packId, canvas, ENEMY_TOTAL)
-  const walkRate = packId === 'runner' ? 18 : packId === 'zombie' ? 8 : 11
-  makeAnim(scene, `${packId}-idle`, packId, 0, IDLE_FRAMES - 1, 6, -1)
-  makeAnim(scene, `${packId}-walk`, packId, IDLE_FRAMES, ENEMY_TOTAL - 1, walkRate, -1)
+  makeAnim(scene, `${sheet}-fire`, sheet, IDLE_FRAMES + WALK_FRAMES, POSE_TOTAL - 1, 22, 0)
 }
 
 export function createCharacterAnims(scene: Phaser.Scene): void {
-  const poses: CharacterPose[] = ['stand', 'hold', 'gun', 'machine', 'silencer', 'reload']
-  for (const pose of poses) buildSoldierPose(scene, pose)
-  buildSoldierDeath(scene)
   for (const pack of CHARACTER_PACKS) {
-    if (pack.id === 'soldier') continue
-    buildEnemyPack(scene, pack.id)
+    for (const pose of CHARACTER_POSES) buildPose(scene, pack.id, pose)
   }
 }
 
 export function applyCharBody(sprite: Phaser.Physics.Arcade.Sprite, radius: number): void {
   sprite.setOrigin(CHAR_BODY.x / CHAR_FRAME_W, CHAR_BODY.y / CHAR_FRAME_H)
   sprite.setCircle(radius, CHAR_BODY.x - radius, CHAR_BODY.y - radius)
+}
+
+/** Bodies read as near-black silhouettes; the team colour lives in the rim glow. */
+const SILHOUETTE = 0x2a3a49
+
+export function applyNeonRim(
+  sprite: Phaser.GameObjects.Sprite,
+  color: number,
+  strength: number,
+): void {
+  if (sprite.scene.renderer.type !== Phaser.WEBGL || !sprite.preFX) {
+    sprite.setTint(color)
+    return
+  }
+  sprite.setTint(SILHOUETTE)
+  sprite.preFX.clear()
+  sprite.preFX.addGlow(color, strength, 0, false, 0.1, 10)
+}
+
+export function rimTint(): number {
+  return SILHOUETTE
 }

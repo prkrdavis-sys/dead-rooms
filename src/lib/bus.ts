@@ -1,3 +1,5 @@
+import type { ModeId } from '../data/modes'
+
 export type GameEventMap = {
   hud: HudState
   toast: string
@@ -6,31 +8,54 @@ export type GameEventMap = {
   paused: boolean
   move: { x: number; y: number }
   fire: boolean
-  special: boolean
-  weapon: number
+  gadget: boolean
+  ping: boolean
+  reload: boolean
   pauseToggle: boolean
   gore: number
   volumes: { music: number; sfx: number }
 }
 
+export type SquadSlot = {
+  name: string
+  hp: number
+  maxHp: number
+  alive: boolean
+  isPlayer: boolean
+}
+
 export type HudState = {
+  modeId: ModeId
+  heroName: string
+  weaponName: string
   health: number
   maxHealth: number
+  armor: number
+  maxArmor: number
+  mag: number
+  magSize: number
+  reloading: boolean
+  gadgetName: string
+  gadgetShort: string
+  gadgetReady: number
+  pingReady: number
   kills: number
   score: number
   wave: number
   timeSec: number
-  weaponName: string
-  weaponSlot: number
-  ammo: number
-  infiniteAmmo: boolean
-  specialName: string
-  specialReady: number
-  waveBanner: string | null
+  objective: string
+  enemiesLeft: number
+  teamsAlive: number
+  squad: SquadSlot[]
+  banner: string | null
+  blackout: boolean
   dead: boolean
 }
 
 export type GameOverPayload = {
+  modeId: ModeId
+  won: boolean
+  reason: string
   kills: number
   timeSec: number
   wave: number

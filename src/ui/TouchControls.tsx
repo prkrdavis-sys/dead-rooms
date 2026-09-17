@@ -147,17 +147,43 @@ export function TouchControls({ visible }: TouchControlsProps) {
         </div>
       </div>
       <div className="pointer-events-auto absolute right-[var(--app-pad-right)] bottom-[var(--app-pad-bottom)] flex flex-col items-center gap-[0.65rem]">
+        <div className="flex gap-[0.65rem]">
+          <button
+            type="button"
+            className="touch-btn touch-none"
+            onPointerDown={(event) => {
+              event.preventDefault()
+              bus.emit('reload', true)
+            }}
+            onPointerUp={() => bus.emit('reload', false)}
+            onPointerCancel={() => bus.emit('reload', false)}
+          >
+            Reload
+          </button>
+          <button
+            type="button"
+            className="touch-btn touch-none"
+            onPointerDown={(event) => {
+              event.preventDefault()
+              bus.emit('ping', true)
+            }}
+            onPointerUp={() => bus.emit('ping', false)}
+            onPointerCancel={() => bus.emit('ping', false)}
+          >
+            Echo
+          </button>
+        </div>
         <button
           type="button"
           className="touch-btn touch-none"
           onPointerDown={(event) => {
             event.preventDefault()
-            bus.emit('special', true)
+            bus.emit('gadget', true)
           }}
-          onPointerUp={() => bus.emit('special', false)}
-          onPointerCancel={() => bus.emit('special', false)}
+          onPointerUp={() => bus.emit('gadget', false)}
+          onPointerCancel={() => bus.emit('gadget', false)}
         >
-          Special
+          Gadget
         </button>
         <button
           type="button"

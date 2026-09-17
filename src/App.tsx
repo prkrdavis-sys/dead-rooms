@@ -31,8 +31,9 @@ export default function App() {
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [profiles, setProfiles] = useState<ProfileState>(() => loadProfiles())
   const [setup, setSetup] = useState<SetupValue>({
+    modeId: 'deathmatch',
     mapId: 'warehouse',
-    specialId: 'dash',
+    heroId: 'grit',
     difficulty: difficultyValue('standard'),
   })
   const [run, setRun] = useState<RunConfig | null>(null)
@@ -69,17 +70,18 @@ export default function App() {
 
   useEffect(() => {
     const off = bus.on('gameover', (payload) => {
-      const next = recordRun(profiles, payload)
+      const next = recordRun(profiles, { ...payload, heroId: setup.heroId })
       saveProfiles(next)
       setProfiles(next)
     })
     return off
-  }, [profiles])
+  }, [profiles, setup.heroId])
 
   function beginRun() {
     const next: RunConfig = {
+      modeId: setup.modeId,
       mapId: setup.mapId,
-      specialId: setup.specialId,
+      heroId: setup.heroId,
       difficulty: setup.difficulty,
       gore: settings.gore,
       music: effectiveMusic(settings),

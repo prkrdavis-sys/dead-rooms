@@ -1,5 +1,18 @@
+import { MODES, type ModeId } from '../data/modes'
+import type { HeroId } from '../data/heroes'
+
 const SETTINGS_KEY = 'deadrooms.settings'
 const PROFILES_KEY = 'deadrooms.profiles'
+const PROFILES_VERSION = 2
+
+export type ModeStats = {
+  games: number
+  wins: number
+  kills: number
+  bestScore: number
+  bestTimeSec: number
+  bestWave: number
+}
 
 export type ProfileStats = {
   gamesPlayed: number
@@ -10,6 +23,9 @@ export type ProfileStats = {
   bestScore: number
   bestWave: number
   deaths: number
+  wins: number
+  byMode: Record<ModeId, ModeStats>
+  heroRuns: Partial<Record<HeroId, number>>
 }
 
 export type Profile = {
@@ -132,9 +148,28 @@ export function effectiveSfx(settings: Settings): number {
 }
 
 export type ProfileState = {
+  version?: number
   activeId: string
   profiles: Profile[]
 }
+
+const defaultModeStats = (): ModeStats => ({
+  games: 0,
+  wins: 0,
+  kills: 0,
+  bestScore: 0,
+  bestTimeSec: 0,
+  bestWave: 0,
+})
+
+const defaultByMode = (): Record<ModeId, ModeStats> =>
+  MODES.reduce(
+    (acc, mode) => {
+      acc[mode.id] = defaultModeStats()
+      return acc
+    },
+    {} as Record<ModeId, ModeStats>,
+  )
 
 const defaultStats = (): ProfileStats => ({
   gamesPlayed: 0,
@@ -145,7 +180,27 @@ const defaultStats = (): ProfileStats => ({
   bestScore: 0,
   bestWave: 0,
   deaths: 0,
+  wins: 0,
+  byMode: defaultByMode(),
+  heroRuns: {},
 })
+
+/** Old saves predate modes and heroes; keep their totals and fill the rest in. */
+function migrateStats(stored: Partial<ProfileStats> | undefined): ProfileStats {
+  const base = defaultStats()
+  if (!stored) return base
+  const byMode = defaultByMode()
+  for (const mode of MODES) {
+    const found = stored.byMode?.[mode.id]
+    if (found) byMode[mode.id] = { ...defaultModeStats(), ...found }
+  }
+  return {
+    ...base,
+    ...stored,
+    byMode,
+    heroRuns: stored.heroRuns ?? {},
+  }
+}
 
 const defaultSettings = (): Settings => ({
   musicOn: true,
@@ -190,7 +245,14 @@ export function saveSettings(settings: Settings): void {
 export function loadProfiles(): ProfileState {
   const stored = readJson<ProfileState>(PROFILES_KEY)
   if (stored?.profiles?.length && stored.activeId) {
-    return stored
+    return {
+      version: PROFILES_VERSION,
+      activeId: stored.activeId,
+      profiles: stored.profiles.map((profile) => ({
+        ...profile,
+        stats: migrateStats(profile.stats),
+      })),
+    }
   }
   const first: Profile = {
     id: uid(),
@@ -198,7 +260,7 @@ export function loadProfiles(): ProfileState {
     createdAt: Date.now(),
     stats: defaultStats(),
   }
-  const state = { activeId: first.id, profiles: [first] }
+  const state = { version: PROFILES_VERSION, activeId: first.id, profiles: [first] }
   saveProfiles(state)
   return state
 }
@@ -229,18 +291,28 @@ export function renameProfile(state: ProfileState, id: string, name: string): Pr
   }
 }
 
-export function recordRun(
-  state: ProfileState,
-  payload: { kills: number; timeSec: number; wave: number; score: number },
-): ProfileState {
+export type RunResult = {
+  modeId: ModeId
+  heroId: HeroId
+  won: boolean
+  kills: number
+  timeSec: number
+  wave: number
+  score: number
+}
+
+export function recordRun(state: ProfileState, payload: RunResult): ProfileState {
   return {
     ...state,
+    version: PROFILES_VERSION,
     profiles: state.profiles.map((profile) => {
       if (profile.id !== state.activeId) return profile
-      const stats = profile.stats
+      const stats = migrateStats(profile.stats)
+      const mode = stats.byMode[payload.modeId] ?? defaultModeStats()
       return {
         ...profile,
         stats: {
+          ...stats,
           gamesPlayed: stats.gamesPlayed + 1,
           totalKills: stats.totalKills + payload.kills,
           totalTimeSec: stats.totalTimeSec + payload.timeSec,
@@ -248,7 +320,23 @@ export function recordRun(
           bestTimeSec: Math.max(stats.bestTimeSec, payload.timeSec),
           bestScore: Math.max(stats.bestScore, payload.score),
           bestWave: Math.max(stats.bestWave, payload.wave),
-          deaths: stats.deaths + 1,
+          deaths: stats.deaths + (payload.won ? 0 : 1),
+          wins: stats.wins + (payload.won ? 1 : 0),
+          byMode: {
+            ...stats.byMode,
+            [payload.modeId]: {
+              games: mode.games + 1,
+              wins: mode.wins + (payload.won ? 1 : 0),
+              kills: mode.kills + payload.kills,
+              bestScore: Math.max(mode.bestScore, payload.score),
+              bestTimeSec: Math.max(mode.bestTimeSec, payload.timeSec),
+              bestWave: Math.max(mode.bestWave, payload.wave),
+            },
+          },
+          heroRuns: {
+            ...stats.heroRuns,
+            [payload.heroId]: (stats.heroRuns[payload.heroId] ?? 0) + 1,
+          },
         },
       }
     }),

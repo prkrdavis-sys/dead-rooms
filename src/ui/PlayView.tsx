@@ -19,6 +19,7 @@ export function PlayView({ run, onExit, onAgain, onOpenSettings }: PlayViewProps
   const [dying, setDying] = useState(false)
   const [over, setOver] = useState<GameOverPayload | null>(null)
   const [touch, setTouch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+  const [toasts, setToasts] = useState<{ id: number; text: string }[]>([])
 
   useEffect(() => {
     const media = window.matchMedia('(pointer: coarse)')
@@ -36,7 +37,15 @@ export function PlayView({ run, onExit, onAgain, onOpenSettings }: PlayViewProps
     const offPause = bus.on('paused', setPaused)
     const offDying = bus.on('dying', setDying)
     const offOver = bus.on('gameover', setOver)
+    let nextToast = 0
+    const offToast = bus.on('toast', (text) => {
+      const id = nextToast
+      nextToast += 1
+      setToasts((current) => [...current.slice(-2), { id, text }])
+      window.setTimeout(() => setToasts((current) => current.filter((item) => item.id !== id)), 2600)
+    })
     return () => {
+      offToast()
       media.removeEventListener('change', onChange)
       window.removeEventListener('resize', onChange)
       window.removeEventListener('keydown', blockKeys)
@@ -55,6 +64,15 @@ export function PlayView({ run, onExit, onAgain, onOpenSettings }: PlayViewProps
       <GameCanvas run={run} />
       <HUD hud={over ? null : hud} touch={showTouch} onPause={() => bus.emit('pauseToggle', true)} />
       <TouchControls visible={showTouch && !locked} />
+      {toasts.length > 0 && !over && (
+        <div className="pointer-events-none absolute inset-x-0 top-[18%] z-30 flex flex-col items-center gap-1">
+          {toasts.map((item) => (
+            <p key={item.id} className="toast m-0">
+              {item.text}
+            </p>
+          ))}
+        </div>
+      )}
       {dying && !over && (
         <div className="death-vignette pointer-events-none absolute inset-0 z-20 grid place-items-center">
           <p className="death-title m-0" role="status" aria-live="assertive">

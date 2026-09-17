@@ -8,11 +8,12 @@ export type CharacterPose = (typeof CHARACTER_POSES)[number]
 
 export const CHARACTER_PACKS = [
   { id: 'soldier', folder: 'soldier', prefix: 'soldier1' },
-  { id: 'zombie', folder: 'zombie', prefix: 'zoimbie1' },
+  { id: 'survivor', folder: 'survivor', prefix: 'survivor1' },
   { id: 'runner', folder: 'runner', prefix: 'womanGreen' },
   { id: 'robot', folder: 'robot', prefix: 'robot1' },
   { id: 'blinker', folder: 'blinker', prefix: 'manOld' },
   { id: 'wraps', folder: 'wraps', prefix: 'manBrown' },
+  { id: 'zombie', folder: 'zombie', prefix: 'zoimbie1' },
 ] as const
 
 export type CharacterPackId = (typeof CHARACTER_PACKS)[number]['id']
@@ -28,6 +29,6 @@ export function characterUrl(
   return `/assets/kenney/characters/${pack.folder}/${pack.prefix}_${pose}.png`
 }
 
-export function soldierSheetKey(pose: CharacterPose): string {
-  return `soldier-${pose}`
+export function poseSheetKey(packId: CharacterPackId, pose: CharacterPose): string {
+  return `${packId}-${pose}`
 }

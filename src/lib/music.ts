@@ -1,9 +1,9 @@
 export type MusicMode = 'off' | 'menu' | 'combat'
 
-const COMBAT_BPM = 132
+const COMBAT_BPM = 104
 const COMBAT_SIXTEENTH = 60 / COMBAT_BPM / 4
 const COMBAT_BASS = [
-  73.42, 0, 73.42, 0, 73.42, 87.31, 0, 73.42, 65.41, 0, 73.42, 0, 98.0, 0, 87.31, 0,
+  73.42, 0, 0, 0, 73.42, 0, 0, 87.31, 65.41, 0, 0, 0, 73.42, 0, 98.0, 0,
 ] as const
 
 export class SynthMusic {
@@ -156,7 +156,7 @@ export class SynthMusic {
     osc.type = 'sine'
     osc.frequency.setValueAtTime(150, time)
     osc.frequency.exponentialRampToValueAtTime(36, time + 0.13)
-    gain.gain.setValueAtTime(0.24, time)
+    gain.gain.setValueAtTime(0.19, time)
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.16)
     osc.connect(gain)
     gain.connect(this.master)
@@ -175,7 +175,7 @@ export class SynthMusic {
     filter.type = 'lowpass'
     filter.frequency.setValueAtTime(520, time)
     filter.frequency.exponentialRampToValueAtTime(130, time + 0.16)
-    gain.gain.setValueAtTime(0.18, time)
+    gain.gain.setValueAtTime(0.14, time)
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22)
     osc.connect(filter)
     filter.connect(gain)
