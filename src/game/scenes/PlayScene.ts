@@ -28,6 +28,8 @@ import { zoomForView } from '../viewZoom'
 
 const BLOOD_KEYS = ['blood-1', 'blood-2', 'blood-3'] as const
 const SELF_GLOW = 74
+/** Fixtures further than this from the player do not bother lighting anything. */
+const LIGHT_CULL_RANGE = 620
 const PICKUP_TTL_MS = 30000
 
 type Sprite = Phaser.Physics.Arcade.Sprite
@@ -53,6 +55,10 @@ export class PlayScene extends Phaser.Scene {
   private pickups!: Phaser.Physics.Arcade.Group
   private bloodLayer!: Phaser.GameObjects.Group
   private telegraph!: Phaser.GameObjects.Graphics
+  private coneGlow!: Phaser.GameObjects.Image
+  /** Masked containers so transient art costs one stencil pass instead of one each. */
+  private fxLayer!: Phaser.GameObjects.Container
+  private groundFx!: Phaser.GameObjects.Container
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private keys!: Record<'w' | 'a' | 's' | 'd' | 'space' | 'shift' | 'q' | 'r', Phaser.Input.Keyboard.Key>
@@ -75,7 +81,6 @@ export class PlayScene extends Phaser.Scene {
   private bannerUntil = 0
   private hudAcc = 0
   private nextHurtAt = 0
-  private breakerCooldown = 0
   private lowSpec = false
   private offs: Array<() => void> = []
 
@@ -99,8 +104,19 @@ export class PlayScene extends Phaser.Scene {
     this.lightGrid = new LightGrid(this, this.grid)
     this.pickups = this.physics.add.group()
     this.bloodLayer = this.add.group()
-    this.telegraph = this.add.graphics().setDepth(15)
-    this.vision.apply(this.telegraph)
+    this.groundFx = this.add.container(0, 0).setDepth(3)
+    this.vision.apply(this.groundFx)
+    this.fxLayer = this.add.container(0, 0).setDepth(15)
+    this.vision.apply(this.fxLayer)
+    this.telegraph = this.add.graphics().setDepth(0)
+    this.fxLayer.add(this.telegraph)
+    this.coneGlow = this.add
+      .image(0, 0, 'glow')
+      .setDepth(9)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setAlpha(0.3)
+      .setScale(9)
+    this.vision.applySquadOnly(this.coneGlow)
     for (const fixture of this.lightGrid.fixtures.getChildren()) this.vision.apply(fixture as Sprite)
     for (const panel of this.lightGrid.breakers.getChildren()) this.vision.apply(panel as Sprite)
 
@@ -112,6 +128,7 @@ export class PlayScene extends Phaser.Scene {
         if (actor.isPlayer) this.flashHurt()
       },
       decorate: (obj) => this.vision.apply(obj as Sprite),
+      addFx: (obj) => this.fxLayer.add(obj),
       sfx: (key, volume) => this.playSfx(key, volume),
     })
     this.combat.railTargets = () => this.roster.living()
@@ -121,6 +138,7 @@ export class PlayScene extends Phaser.Scene {
       actors: () => this.roster.living(),
       onNoise: (x, y, radius, team) => this.director.reportNoise(x, y, radius, team, this.time.now),
       decorate: (obj) => this.vision.apply(obj as Sprite),
+      addFx: (obj) => this.fxLayer.add(obj),
       sfx: (key, volume) => this.playSfx(key, volume),
       toast: (text) => bus.emit('toast', text),
     })
@@ -156,6 +174,7 @@ export class PlayScene extends Phaser.Scene {
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off('resize', this.syncCameraToView, this)
+      this.vision.destroy()
       for (const off of this.offs) off()
       this.offs = []
       if (import.meta.env.DEV) {
@@ -470,12 +489,26 @@ export class PlayScene extends Phaser.Scene {
     const player = this.roster.player()
 
     if (player?.alive) {
+      const hero = HERO_BY_ID[player.heroId ?? 'grit']
+      const reach = blackout ? SELF_GLOW : hero.cone.range * player.coneMul * 0.45
+      this.coneGlow.setVisible(true)
+      this.coneGlow.setPosition(
+        player.sprite.x + player.facing.x * reach * 0.5,
+        player.sprite.y + player.facing.y * reach * 0.5,
+      )
+      this.coneGlow.setScale(Math.max(2, reach / 22))
+    } else {
+      this.coneGlow.setVisible(false)
+    }
+
+    if (player?.alive) {
       cones.push({
         x: player.sprite.x,
         y: player.sprite.y,
         angle: Math.atan2(player.facing.y, player.facing.x),
         spread: Math.PI * 2,
         range: SELF_GLOW,
+        remember: true,
       })
       if (!blackout) {
         const hero = HERO_BY_ID[player.heroId ?? 'grit']
@@ -485,6 +518,7 @@ export class PlayScene extends Phaser.Scene {
           angle: Math.atan2(player.facing.y, player.facing.x),
           spread: Phaser.Math.DegToRad(hero.cone.spreadDeg),
           range: hero.cone.range * player.coneMul,
+          remember: true,
         })
       }
     }
@@ -499,19 +533,24 @@ export class PlayScene extends Phaser.Scene {
           angle: Math.atan2(mate.facing.y, mate.facing.x),
           spread: Phaser.Math.DegToRad(hero.cone.spreadDeg),
           range: hero.cone.range * mate.coneMul * 0.9,
+          remember: true,
         })
       }
     }
 
-    const camera = this.cameras.main
-    const view = camera.worldView
+    const view = this.cameras.main.worldView
     for (const cone of this.lightGrid.activeCones(now, blackout)) {
       const margin = cone.range + TILE
-      if (
+      const offscreen =
         cone.x < view.x - margin ||
         cone.x > view.right + margin ||
         cone.y < view.y - margin ||
         cone.y > view.bottom + margin
+      if (offscreen) continue
+      if (
+        player?.alive &&
+        Phaser.Math.Distance.Between(player.sprite.x, player.sprite.y, cone.x, cone.y) >
+          LIGHT_CULL_RANGE + cone.range
       ) {
         continue
       }
@@ -523,8 +562,8 @@ export class PlayScene extends Phaser.Scene {
 
   private toggleBreaker(panel: Phaser.GameObjects.GameObject): void {
     const now = this.time.now
-    if (now < this.breakerCooldown) return
-    this.breakerCooldown = now + 900
+    if (now < Number(panel.getData('nextToggleAt') ?? 0)) return
+    panel.setData('nextToggleAt', now + 2600)
     const on = this.lightGrid.toggleBreaker(panel)
     this.playSfx('switch', 0.4)
     bus.emit('toast', on ? 'Breaker on — lights up' : 'Breaker off — that wing is dark')
@@ -635,7 +674,7 @@ export class PlayScene extends Phaser.Scene {
         .setAlpha(0.4 + gore * 0.4)
         .setScale(0.7 + gore * 0.8)
         .setRotation(Math.random() * Math.PI)
-      this.vision.apply(stamp)
+      this.groundFx.add(stamp)
       this.bloodLayer.add(stamp)
     }
   }
@@ -715,6 +754,7 @@ export class PlayScene extends Phaser.Scene {
       magSize: hero.weapon.mag,
       reloading: Boolean(player && player.reloadUntil > now),
       gadgetName: hero.gadget.name,
+      gadgetShort: hero.gadget.short,
       gadgetReady,
       pingReady,
       kills: this.kills,

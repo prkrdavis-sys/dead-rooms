@@ -32,12 +32,12 @@ function radial(
 
 function floorTile(scene: Phaser.Scene): void {
   paint(scene, 'floor', 48, 48, (ctx, w, h) => {
-    ctx.fillStyle = '#0c1118'
+    ctx.fillStyle = '#16212d'
     ctx.fillRect(0, 0, w, h)
-    ctx.strokeStyle = 'rgba(56,189,248,0.10)'
+    ctx.strokeStyle = 'rgba(103,232,249,0.22)'
     ctx.lineWidth = 1
     ctx.strokeRect(0.5, 0.5, w - 1, h - 1)
-    ctx.fillStyle = 'rgba(148,163,184,0.06)'
+    ctx.fillStyle = 'rgba(148,163,184,0.1)'
     for (let i = 0; i < 12; i += 1) {
       ctx.fillRect((i * 19) % w, (i * 13) % h, 2, 2)
     }
@@ -46,11 +46,11 @@ function floorTile(scene: Phaser.Scene): void {
 
 function wallTile(scene: Phaser.Scene): void {
   paint(scene, 'wall', 48, 48, (ctx, w, h) => {
-    ctx.fillStyle = '#05080c'
+    ctx.fillStyle = '#060a0f'
     ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = '#0d1520'
+    ctx.fillStyle = '#16242f'
     ctx.fillRect(3, 3, w - 6, h - 6)
-    ctx.strokeStyle = 'rgba(34,211,238,0.5)'
+    ctx.strokeStyle = 'rgba(34,211,238,0.75)'
     ctx.lineWidth = 2
     ctx.beginPath()
     ctx.moveTo(1, 1)

@@ -34,7 +34,7 @@ export class Deathmatch implements ModeController {
       registry.spawnHero(heroId, TEAM_PLAYER, spot.x, spot.y, false)
     })
 
-    const squadCount = run.difficulty >= 7 ? 3 : 2
+    const squadCount = run.difficulty >= 7 ? 3 : run.difficulty >= 4 ? 2 : 1
     for (let team = 1; team <= squadCount; team += 1) {
       this.enemyTeams.push(team)
       const spawns = grid.squadSpawns[team] ?? playerSpawns

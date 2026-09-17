@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { HERO_BY_ID, type HeroWeapon } from '../../data/heroes'
 import { type Actor } from '../actors/Actor'
-import { teamColor } from '../actors/ActorRegistry'
+import { rimTint } from '../createAnims'
 import type { LightGrid } from '../world/LightGrid'
 import type { RoomGrid } from '../world/grid'
 import { rayDistance } from '../vision/raycast'
@@ -12,8 +12,10 @@ export type CombatHooks = {
   onNoise: (x: number, y: number, radius: number, team: number) => void
   onDown: (actor: Actor, killerTeam: number | null) => void
   onDamage: (actor: Actor, amount: number) => void
-  /** Clip world objects to the lit region. */
+  /** Clip a physics object to the lit region. */
   decorate: (obj: Phaser.GameObjects.GameObject) => void
+  /** Park a short-lived visual effect in the shared, already-clipped FX layer. */
+  addFx: (obj: Phaser.GameObjects.GameObject) => void
   sfx: (key: string, volume: number) => void
 }
 
@@ -42,7 +44,7 @@ export class CombatSystem {
     this.hooks = hooks
     this.bullets = scene.physics.add.group({ maxSize: 180 })
     this.beams = scene.add.graphics().setDepth(16)
-    hooks.decorate(this.beams)
+    hooks.addFx(this.beams)
   }
 
   weaponOf(actor: Actor): HeroWeapon | null {
@@ -144,7 +146,7 @@ export class CombatSystem {
     this.scene.time.delayedCall(40, () => {
       if (actor.alive && actor.sprite.active) {
         actor.sprite.clearTint()
-        actor.sprite.setTint(actor.kind === 'hero' ? teamColor(actor.team) : 0x86efac)
+        actor.sprite.setTint(rimTint())
       }
     })
     if (actor.hp <= 0) this.hooks.onDown(actor, fromTeam)
@@ -168,7 +170,7 @@ export class CombatSystem {
 
   explode(x: number, y: number, radius: number, damage: number, fromTeam: number | null, actors: Actor[], now: number): void {
     const blast = this.scene.add.image(x, y, 'blast').setDepth(15)
-    this.hooks.decorate(blast)
+    this.hooks.addFx(blast)
     this.scene.tweens.add({
       targets: blast,
       alpha: 0,
@@ -278,7 +280,7 @@ export class CombatSystem {
       .setRotation(angle)
       .setOrigin(0.08, 0.5)
       .setScale(weapon.kind === 'shot' ? 1.4 : 1.15)
-    this.hooks.decorate(flash)
+    this.hooks.addFx(flash)
     this.scene.tweens.add({
       targets: flash,
       alpha: 0,
@@ -297,7 +299,7 @@ export class CombatSystem {
       const jitter = (Math.random() - 0.5) * 0.7
       const dist = 8 + Math.random() * 18
       const spark = this.scene.add.image(x, y, 'spark').setDepth(16).setScale(0.5 + Math.random() * 0.5)
-      this.hooks.decorate(spark)
+      this.hooks.addFx(spark)
       this.scene.tweens.add({
         targets: spark,
         x: x + Math.cos(angle + jitter) * dist,

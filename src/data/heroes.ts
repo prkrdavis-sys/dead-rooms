@@ -30,6 +30,8 @@ export type HeroWeapon = {
 export type GadgetDef = {
   id: GadgetId
   name: string
+  /** Fits the HUD dial. */
+  short: string
   cooldownMs: number
   blurb: string
 }
@@ -85,6 +87,7 @@ export const HEROES: HeroDef[] = [
     },
     gadget: {
       id: 'echo',
+      short: 'Echo',
       name: 'Deep Echo',
       cooldownMs: 7000,
       blurb: 'A hard sonar slap. Everything breathing gets outlined through the walls — including you.',
@@ -124,6 +127,7 @@ export const HEROES: HeroDef[] = [
     },
     gadget: {
       id: 'focus',
+      short: 'Focus',
       name: 'Focus',
       cooldownMs: 9000,
       blurb: 'Narrows the beam to a needle and doubles its reach. For a few seconds you own one hallway completely.',
@@ -163,6 +167,7 @@ export const HEROES: HeroDef[] = [
     },
     gadget: {
       id: 'bulwark',
+      short: 'Wall',
       name: 'Bulwark',
       cooldownMs: 8000,
       blurb: 'Drops a plated panel that stops bullets and light. Cut a room in half and take the half you want.',
@@ -202,6 +207,7 @@ export const HEROES: HeroDef[] = [
     },
     gadget: {
       id: 'flashbang',
+      short: 'Flash',
       name: 'Flashbang',
       cooldownMs: 7500,
       blurb: 'Bleaches every cone in the blast. Blind operators keep shooting, just not at anything.',
@@ -241,6 +247,7 @@ export const HEROES: HeroDef[] = [
     },
     gadget: {
       id: 'beacon',
+      short: 'Beacon',
       name: 'Beacon',
       cooldownMs: 8500,
       blurb: 'Plants a burning lamp that patches the squad while it stands. It also tells the map exactly where you are.',
@@ -280,6 +287,7 @@ export const HEROES: HeroDef[] = [
     },
     gadget: {
       id: 'lightsout',
+      short: 'Dark',
       name: 'Lights Out',
       cooldownMs: 9500,
       blurb: 'Kills every fixture nearby and drops your own light with them. Whatever was watching now guesses.',

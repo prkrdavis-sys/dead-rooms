@@ -9,6 +9,11 @@ export type ConeSpec = {
   /** Full cone width in radians. Use `Math.PI * 2` for a lamp. */
   spread: number
   range: number
+  /**
+   * Only what the squad lights itself gets written into the memory layer.
+   * A room a lamp happens to be burning in stays unknown until someone walks it.
+   */
+  remember?: boolean
 }
 
 /**

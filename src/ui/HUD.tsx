@@ -96,8 +96,8 @@ export function HUD({ hud, onPause, touch }: HUDProps) {
             </div>
             {!touch && (
               <div className="pointer-events-none flex gap-2">
-                <AbilityDial label={hud.gadgetName} ready={hud.gadgetReady} hint="Shift" />
-                <AbilityDial label="Echo" ready={hud.pingReady} hint="Q" />
+                <AbilityDial label={hud.gadgetShort} ready={hud.gadgetReady} hint={`${hud.gadgetName} (Shift)`} />
+                <AbilityDial label="Ping" ready={hud.pingReady} hint="Echo ping (Q)" />
               </div>
             )}
             <ObjectiveBlock hud={hud} compact={touch} />

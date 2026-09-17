@@ -101,7 +101,10 @@ export function stepBot(actor: Actor, target: Actor | null, ctx: BotContext): vo
     return
   }
 
+  const previous = memory.goal
   memory.goal = chooseGoal(actor, target, ctx, now)
+  if (memory.goal !== 'engage') memory.holdUntil = 0
+  else if (previous !== 'engage') memory.holdUntil = 0
   if (target) {
     memory.contact = { x: target.sprite.x, y: target.sprite.y }
     memory.contactAt = now
@@ -143,7 +146,15 @@ export function stepBot(actor: Actor, target: Actor | null, ctx: BotContext): vo
         target.sprite.x,
         target.sprite.y,
       )
-      if (aimOk && dist < want * 1.6 && Math.random() < ctx.skill) {
+      // Bots need a beat to react to a new contact, and they shoot with an
+      // aim error that shrinks as difficulty rises, so fights are survivable.
+      if (memory.holdUntil === 0) memory.holdUntil = now + 520 - ctx.skill * 380
+      if (aimOk && now > memory.holdUntil && dist < want * 1.6) {
+        const error = (1 - ctx.skill) * 0.34
+        const jitter = (Math.random() - 0.5) * error
+        const aim = Math.atan2(actor.facing.y, actor.facing.x) + jitter
+        actor.facing.x = Math.cos(aim)
+        actor.facing.y = Math.sin(aim)
         ctx.combat.fire(actor, now)
       }
       if (now >= actor.gadgetReadyAt && Math.random() < 0.02) ctx.gadgets.use(actor, now)

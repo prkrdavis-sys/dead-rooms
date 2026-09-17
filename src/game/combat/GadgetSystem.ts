@@ -11,6 +11,7 @@ export type GadgetHooks = {
   actors: () => Actor[]
   onNoise: (x: number, y: number, radius: number, team: number) => void
   decorate: (obj: Phaser.GameObjects.GameObject) => void
+  addFx: (obj: Phaser.GameObjects.GameObject) => void
   sfx: (key: string, volume: number) => void
   toast: (text: string) => void
 }
@@ -148,7 +149,7 @@ export class GadgetSystem {
     const y = actor.sprite.y + actor.facing.y * 150
     this.lights.addFlash(x, y, now, 360)
     const pop = this.scene.add.image(x, y, 'blast').setDepth(20).setScale(0.6)
-    this.hooks.decorate(pop)
+    this.hooks.addFx(pop)
     this.scene.tweens.add({
       targets: pop,
       alpha: 0,

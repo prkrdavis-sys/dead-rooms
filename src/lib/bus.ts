@@ -36,6 +36,7 @@ export type HudState = {
   magSize: number
   reloading: boolean
   gadgetName: string
+  gadgetShort: string
   gadgetReady: number
   pingReady: number
   kills: number

@@ -17,9 +17,9 @@ type LightSource = {
   sprite: Phaser.Physics.Arcade.Sprite | null
 }
 
-const LAMP_RANGE = 196
-const CORPSE_RANGE = 238
-const BEACON_RANGE = 176
+const LAMP_RANGE = 148
+const CORPSE_RANGE = 210
+const BEACON_RANGE = 158
 
 /**
  * Every fixture that throws light: ceiling lamps wired to breaker panels,

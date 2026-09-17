@@ -194,14 +194,23 @@ export function applyCharBody(sprite: Phaser.Physics.Arcade.Sprite, radius: numb
   sprite.setCircle(radius, CHAR_BODY.x - radius, CHAR_BODY.y - radius)
 }
 
-/** Neon rim light so silhouettes read against the dark. Falls back to a flat tint on Canvas. */
+/** Bodies read as near-black silhouettes; the team colour lives in the rim glow. */
+const SILHOUETTE = 0x2a3a49
+
 export function applyNeonRim(
   sprite: Phaser.GameObjects.Sprite,
   color: number,
   strength: number,
 ): void {
-  sprite.setTint(color)
-  if (sprite.scene.renderer.type !== Phaser.WEBGL || !sprite.preFX) return
+  if (sprite.scene.renderer.type !== Phaser.WEBGL || !sprite.preFX) {
+    sprite.setTint(color)
+    return
+  }
+  sprite.setTint(SILHOUETTE)
   sprite.preFX.clear()
-  sprite.preFX.addGlow(color, strength, 0, false, 0.12, 8)
+  sprite.preFX.addGlow(color, strength, 0, false, 0.1, 10)
+}
+
+export function rimTint(): number {
+  return SILHOUETTE
 }
